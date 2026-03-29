@@ -1,0 +1,130 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Quản lý Dịch vụ</h2>
+    <button *ngIf="userRole === 'OWNER'" class="btn-add" (click)="openAddModal()">+ Thêm Dịch Vụ</button>
+  </div>
+
+  <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" 
+           placeholder="Tìm theo tên dịch vụ..." 
+           style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
+    <button (click)="onSearch()" 
+            style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      Tìm kiếm
+    </button>
+  </div>
+
+  <div class="loading-msg" *ngIf="isLoading">Đang tải dữ liệu...</div>
+  <div class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="table-card" *ngIf="!isLoading && serviceList.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên Dịch Vụ</th>
+          <th>Loại Dịch Vụ</th>
+          <th>Đơn Giá</th>
+          <th>Đơn Vị Tính</th>
+          <th>Mô Tả</th>
+          <th *ngIf="userRole === 'OWNER'">Hành Động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let srv of serviceList">
+          <td>#{{ srv.id }}</td>
+          <td class="fw-bold">{{ srv.name }}</td>
+
+          <td>
+            <span class="badge" [ngClass]="getServiceTypeClass(srv.service_type)">
+              {{ getServiceTypeName(srv.service_type) }}
+            </span>
+          </td>
+
+          <td class="price">{{ srv.unit_price | number:'1.0-0' }} đ</td>
+          <td>{{ srv.unit }}</td>
+          <td>{{ srv.description || '---' }}</td>
+          <td class="actions">
+            <button *ngIf="userRole === 'OWNER'" class="btn-edit" (click)="openEditModal(srv)">Sửa</button>
+            <button *ngIf="userRole === 'OWNER'" class="btn-delete" (click)="deleteService(srv.id)">Xóa</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="totalPages > 0" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
+      <div style="color: #7f8c8d; font-size: 14px;">
+        Hiển thị <b>{{ serviceList.length }}</b> / Tổng <b>{{ totalRecords }}</b> dịch vụ
+      </div>
+      
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+                [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+          ❮ Trước
+        </button>
+
+        <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
+
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+                [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+          Sau ❯
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && serviceList.length === 0">
+    <p>Hệ thống chưa có dịch vụ nào (Điện, nước, rác...). Hãy thêm ngay nhé!</p>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3>{{ isEditMode ? 'Sửa Dịch Vụ' : 'Thêm Dịch Vụ Mới' }}</h3>
+      <button class="btn-close" (click)="closeModal()">×</button>
+    </div>
+
+    <form [formGroup]="serviceForm" (ngSubmit)="saveService()">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Tên dịch vụ (VD: Điện sinh hoạt, Nước máy...)</label>
+          <input type="text" formControlName="name">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Loại dịch vụ (Cách tính tiền)</label>
+          <select formControlName="service_type">
+            <option value="FIXED">Cố định (Thuê phòng, Rác, Wifi...)</option>
+            <option value="METER">Có đồng hồ đo (Điện, Nước)</option>
+            <option value="PER_PERSON">Tính theo đầu người (Thang máy...)</option>
+            <option value="PER_MOTORBIKE">Tính theo số lượng Xe Máy</option>
+            <option value="PER_CAR">Tính theo số lượng Ô Tô</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Đơn giá (VNĐ)</label>
+          <input type="number" formControlName="unit_price">
+        </div>
+
+        <div class="form-group">
+          <label>Đơn vị tính hiển thị</label>
+          <input type="text" formControlName="unit" placeholder="VD: kWh, Khối, VNĐ/Người...">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Mô tả thêm (Tùy chọn)</label>
+          <textarea formControlName="description" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
+        <button type="submit" class="btn-save">{{ isEditMode ? 'Cập nhật' : 'Lưu Dịch Vụ' }}</button>
+      </div>
+    </form>
+  </div>
+</div>

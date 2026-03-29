@@ -1,0 +1,27 @@
+<div class="login-wrapper">
+  <div class="login-card" style="max-width: 400px;">
+    <h2>Xác Thực Email</h2>
+    <p class="subtitle">
+      Vui lòng kiểm tra hộp thư <b>{{ userEmail }}</b> và nhập mã OTP 6 số để kích hoạt tài khoản.
+    </p>
+
+    <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+
+    <form [formGroup]="otpForm" (ngSubmit)="onSubmit()">
+      
+      <div class="form-group">
+        <label>Mã xác thực (OTP)</label>
+        <input type="text" formControlName="otp_code" placeholder="VD: 123456" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 5px; font-weight: bold;">
+      </div>
+
+      <button type="submit" class="btn-login" [disabled]="otpForm.invalid || isLoading">
+        {{ isLoading ? 'Đang kiểm tra...' : 'Kích Hoạt Tài Khoản' }}
+      </button>
+      
+    </form>
+
+    <div class="auth-links">
+      <p>Nhập sai email? <a href="/register">Đăng ký lại</a></p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,114 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Quản lý Khu Trọ / Tòa Nhà</h2>
+    <button *ngIf="userRole === 'OWNER'" class="btn-add" (click)="openAddModal()">+ Thêm Khu Trọ</button>
+  </div>
+
+  <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" 
+           placeholder="Tìm theo tên nhà, địa chỉ..." 
+           style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
+    <button (click)="onSearch()" 
+            style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      Tìm kiếm
+    </button>
+  </div>
+
+  <div class="loading-msg" *ngIf="isLoading">Đang tải dữ liệu...</div>
+  <div class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="table-card" *ngIf="!isLoading && houseList.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên Khu Trọ</th>
+          <th>Địa chỉ chi tiết</th>
+          <th>Phường/Xã</th>
+          <th>Quận/Huyện</th>
+          <th>Tỉnh/Thành</th>
+          <th *ngIf="userRole === 'OWNER'">Hành Động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let house of houseList">
+          <td>#{{ house.id }}</td>
+          <td class="fw-bold">{{ house.name }}</td>
+          <td>{{ house.address }}</td>
+          <td>{{ house.ward }}</td>
+          <td>{{ house.district }}</td>
+          <td>{{ house.city }}</td>
+          <td class="actions">
+            <button *ngIf="userRole === 'OWNER'" class="btn-edit" (click)="openEditModal(house)">Sửa</button>
+            <button *ngIf="userRole === 'OWNER'" class="btn-delete" (click)="deleteHouse(house.id)">Xóa</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="totalPages > 0" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
+      <div style="color: #7f8c8d; font-size: 14px;">
+        Hiển thị <b>{{ houseList.length }}</b> / Tổng <b>{{ totalRecords }}</b> khu trọ
+      </div>
+      
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+                [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+          ❮ Trước
+        </button>
+
+        <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
+
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+                [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+          Sau ❯
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && houseList.length === 0">
+    <p>Chưa có khu trọ nào. Hãy thêm khu trọ đầu tiên của bạn!</p>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>{{ isEditMode ? 'Sửa Khu Trọ' : 'Thêm Khu Trọ Mới' }}</h3>
+      <button class="btn-close" (click)="closeModal()">×</button>
+    </div>
+
+    <form [formGroup]="houseForm" (ngSubmit)="saveHouse()">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Tên Khu Trọ / Tòa Nhà</label>
+          <input type="text" formControlName="name" placeholder="VD: Trọ Cao Cấp Số 1">
+        </div>
+        <div class="form-group">
+          <label>Tỉnh/Thành phố</label>
+          <input type="text" formControlName="city" placeholder="VD: Hà Nội">
+        </div>
+        <div class="form-group">
+          <label>Quận/Huyện</label>
+          <input type="text" formControlName="district" placeholder="VD: Cầu Giấy">
+        </div>
+        <div class="form-group">
+          <label>Phường/Xã</label>
+          <input type="text" formControlName="ward" placeholder="VD: Dịch Vọng Hậu">
+        </div>
+        <div class="form-group full-width">
+          <label>Địa chỉ chi tiết</label>
+          <input type="text" formControlName="address" placeholder="VD: Số 18, ngõ 111...">
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
+        <button type="submit" class="btn-save">{{ isEditMode ? 'Cập nhật' : 'Lưu Khu Trọ' }}</button>
+      </div>
+    </form>
+  </div>
+</div>

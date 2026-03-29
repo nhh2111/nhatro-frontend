@@ -1,0 +1,148 @@
+<div class="page-container">
+    <div class="page-header">
+        <h2>Quản lý Khách Thuê</h2>
+        <button class="btn-add" (click)="openAddModal()">+ Thêm Khách Mới</button>
+    </div>
+    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" 
+               placeholder="Tìm theo Tên, SĐT, CCCD..." 
+               style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
+        <button (click)="onSearch()" style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Tìm kiếm
+        </button>
+    </div>
+
+    <div class="loading-msg" *ngIf="isLoading">Đang tải dữ liệu...</div>
+    <div class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <div class="table-card" *ngIf="!isLoading && tenantList.length > 0">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Họ Tên</th>
+                    <th>SĐT</th>
+                    <th>CCCD/CMND</th>
+                    <th>Biển Số Xe</th>
+                    <th>Quê Quán</th>
+                    <th>Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let tenant of tenantList">
+                    <td>#{{ tenant.id }}</td>
+                    <td class="fw-bold">{{ tenant.full_name }}</td>
+                    <td style="color: #2980b9; font-weight: 600;">{{ tenant.phone }}</td>
+                    <td class="fw-bold">{{ tenant.cccd }}</td>
+                    <td>
+                        <span *ngIf="tenant.vehicle_type === 'MOTORBIKE'" style="font-size: 12px; color: #e67e22;">(Xe máy)</span>
+                        <span *ngIf="tenant.vehicle_type === 'CAR'" style="font-size: 12px; color: #27ae60;">(Ô tô)</span>
+                        {{ tenant.license_plates || '---' }}
+                    </td>
+                    <td>{{ tenant.address || '---' }}</td>
+                    <td class="actions">
+                        <button class="btn-edit" (click)="openEditModal(tenant)">Sửa</button>
+                        <button *ngIf="userRole === 'OWNER'" class="btn-delete" (click)="deleteTenant(tenant.id)">Xóa</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div *ngIf="totalPages > 0" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div style="color: #7f8c8d; font-size: 14px;">
+            Hiển thị <b>{{ tenantList.length }}</b> / Tổng <b>{{ totalRecords }}</b> khách thuê
+        </div>
+        
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" 
+                    style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+                    [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+                ❮ Trước
+            </button>
+
+            <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
+
+            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" 
+                    style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+                    [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+                Sau ❯
+            </button>
+        </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading && tenantList.length === 0">
+        <p>Chưa có khách thuê nào. Hãy thêm khách hàng đầu tiên của bạn!</p>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3>{{ isEditMode ? 'Cập Nhật Khách Thuê' : 'Thêm Khách Mới' }}</h3>
+            <button class="btn-close" (click)="closeModal()">×</button>
+        </div>
+
+        <form [formGroup]="tenantForm" (ngSubmit)="saveTenant()">
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label>Họ và Tên (*)</label>
+                    <input type="text" formControlName="full_name" placeholder="VD: Nguyễn Văn A">
+                </div>
+
+                <div class="form-group">
+                    <label>Số Điện Thoại (*)</label>
+                    <input type="text" formControlName="phone" placeholder="VD: 0987654321">
+                </div>
+
+                <div class="form-group">
+                    <label>Số CCCD (*)</label>
+                    <input type="text" formControlName="cccd" placeholder="Nhập 9 hoặc 12 số">
+                </div>
+
+                <div class="form-group">
+                    <label>Ngày Sinh</label>
+                    <input type="date" formControlName="dob">
+                </div>
+
+                <div class="form-group">
+                    <label>Giới Tính</label>
+                    <select formControlName="gender">
+                        <option value="MALE">Nam</option>
+                        <option value="FEMALE">Nữ</option>
+                        <option value="OTHER">Khác</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <div style="display: flex; gap: 15px;">
+                        <div style="flex: 1;">
+                            <label>Số lượng Xe Máy</label>
+                            <input type="number" formControlName="motorbike_count" min="0">
+                        </div>
+                        <div style="flex: 1;">
+                            <label>Số lượng Ô Tô</label>
+                            <input type="number" formControlName="car_count" min="0">
+                        </div>
+                        <div style="flex: 2;">
+                            <label>Các Biển Số Xe</label>
+                            <input type="text" formControlName="license_plates" placeholder="VD: 29H1-123.45, 30G-777.88">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Link ảnh CCCD (Tùy chọn)</label>
+                    <input type="text" formControlName="image_url" placeholder="Dán link ảnh (Google Drive/Imgur...) vào đây">
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Địa chỉ / Quê quán</label>
+                    <textarea formControlName="address" rows="2" placeholder="Nhập địa chỉ thường trú..."></textarea>
+                </div>
+            </div> <div class="modal-footer">
+                <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
+                <button type="submit" class="btn-save">{{ isEditMode ? 'Lưu Thay Đổi' : 'Tạo Hồ Sơ' }}</button>
+            </div>
+        </form>
+    </div>
+</div>

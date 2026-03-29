@@ -1,0 +1,152 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Quản lý Sự cố & Công việc Vận hành</h2>
+    <button class="btn-add" (click)="openAddModal()">+ Ghi nhận sự cố</button>
+  </div>
+
+  <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" 
+           placeholder="Tìm theo tiêu đề, nội dung sự cố..." 
+           style="padding: 10px; width: 350px; border: 1px solid #ccc; border-radius: 5px;">
+    <button (click)="onSearch()" 
+            style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      Tìm kiếm
+    </button>
+  </div>
+
+  <div class="loading-msg" *ngIf="isLoading">Đang xử lý dữ liệu...</div>
+  <div class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="table-card" *ngIf="!isLoading && taskList.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Ngày tạo</th>
+          <th>Vị trí (Nhà/Phòng)</th>
+          <th>Tiêu đề & Nội dung</th>
+          <th>Trạng thái</th>
+          <th>Xử lý ngày</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let task of taskList" [ngClass]="{'row-done': task.status === 'DONE'}">
+          <td>#{{ task.id }}</td>
+          <td>{{ task.created_at | date:'dd/MM/yyyy' }}</td>
+          <td>
+            <strong>{{ task.House?.name || '---' }}</strong> <br>
+            <small style="color: #7f8c8d;">
+              {{ task.Room?.room_number ? 'P.' + task.Room?.room_number : '(Vị trí chung tòa nhà)' }}
+            </small>
+          </td>
+          <td>
+            <strong>{{ task.title }}</strong>
+            <p style="font-size: 13px; color: #666; margin: 3px 0 0 0;">{{ task.content || '---' }}</p>
+          </td>
+          <td>
+            <select [ngModel]="task.status" 
+                    (ngModelChange)="changeStatus(task.id, $event)" 
+                    [ngClass]="'badge-' + task.status" 
+                    class="status-select">
+              <option value="OPEN">Mới tiếp nhận (OPEN)</option>
+              <option value="IN_PROGRESS">Đang xử lý (IN_PROGRESS)</option>
+              <option value="DONE">Hoàn thành (DONE)</option>
+              <option value="CANCELLED">Hủy bỏ (CANCELLED)</option>
+            </select>
+          </td>
+          <td>{{ (task.finished_at | date:'dd/MM/yyyy') || '---' }}</td>
+          <td class="actions">
+            <button class="btn-edit" (click)="openEditModal(task)">Sửa</button>
+            <button class="btn-delete" (click)="deleteTask(task.id)">Xóa</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="totalPages > 0" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
+      <div style="color: #7f8c8d; font-size: 14px;">
+        Hiển thị <b>{{ taskList.length }}</b> / Tổng <b>{{ totalRecords }}</b> sự cố
+      </div>
+      
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+                [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+          ❮ Trước
+        </button>
+
+        <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
+
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" 
+                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+                [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+          Sau ❯
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && taskList.length === 0">
+    <p>Hiện tại không có sự cố nào cần xử lý. Hệ thống vận hành tốt!</p>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>{{ isEditMode ? 'Cập Nhật Thông Tin Sự Cố' : 'Ghi Nhận Sự Cố / Công Việc Mới' }}</h3>
+      <button class="btn-close" (click)="closeModal()">×</button>
+    </div>
+
+    <form [formGroup]="taskForm" (ngSubmit)="saveTask()">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Tòa Nhà / Khu Trọ (*)</label>
+          <select formControlName="house_id">
+            <option value="" disabled selected>-- Chọn nhà --</option>
+            <option *ngFor="let h of houseList" [value]="h.id">{{ h.name }} ({{h.address}})</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Phòng liên quan (Tùy chọn)</label>
+          <select formControlName="room_id">
+            <option [value]="null" selected>-- Vị trí chung của tòa nhà --</option>
+            <option *ngFor="let r of filteredRoomList" [value]="r.id">Phòng {{ r.room_number }} (Tầng {{r.floor}})</option>
+          </select>
+          <small *ngIf="taskForm.get('house_id')?.value && filteredRoomList.length === 0" style="color: red;">
+            Nhà này chưa có danh sách phòng. Hãy thêm phòng trước!
+          </small>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Tiêu đề sự cố / Công việc (*)</label>
+          <input type="text" formControlName="title" placeholder="VD: Hỏng vòi nước, Cháy bóng đèn...">
+        </div>
+        
+        <div class="form-group full-width">
+          <label>Mô tả chi tiết nội dung (content)</label>
+          <textarea formControlName="content" rows="4" placeholder="Nhập mô tả chi tiết sự cố tại đây..."></textarea>
+        </div>
+
+        <div class="form-group full-width" *ngIf="isEditMode">
+          <label>Trạng thái xử lý</label>
+          <select formControlName="status">
+            <option value="OPEN">Mới tiếp nhận (OPEN)</option>
+            <option value="IN_PROGRESS">Đang xử lý (IN_PROGRESS)</option>
+            <option value="DONE">Hoàn thành (DONE)</option>
+            <option value="CANCELLED">Hủy bỏ (CANCELLED)</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
+        <button type="submit" class="btn-save" [disabled]="taskForm.invalid || isLoading">
+          {{ isLoading ? 'Đang lưu...' : (isEditMode ? 'Lưu Thay Đổi' : 'Tạo Nhiệm Vụ') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

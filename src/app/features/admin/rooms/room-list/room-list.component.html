@@ -1,0 +1,227 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Quản lý Danh sách Phòng</h2>
+    <button *ngIf="userRole === 'OWNER'" class="btn-add" (click)="openAddModal()">+ Thêm Phòng Mới</button>
+  </div>
+  <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Tìm kiếm theo Số phòng..."
+      style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
+    <button (click)="onSearch()"
+      style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      Tìm kiếm
+    </button>
+  </div>
+
+  <div class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading-msg" *ngIf="isLoading">Đang tải dữ liệu...</div>
+
+  <div class="table-card" *ngIf="!isLoading && roomList.length > 0">
+    <div style="overflow-x: auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Khu Trọ / Nhà</th>
+            <th>Số Phòng</th>
+            <th>Tầng</th>
+            <th>Diện Tích</th>
+            <th>Giới Tính</th>
+            <th>Giá Cơ Bản</th>
+            <th>Sức Chứa</th>
+            <th>Hình Ảnh</th>
+            <th style="max-width: 150px;">Mô Tả</th>
+            <th>Trạng Thái</th>
+            <th>Hành Động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let room of roomList">
+            <td class="fw-bold" style="color: #2c3e50;">{{ getHouseName(room.house_id) }}</td>
+            <td class="fw-bold">{{ room.room_number }}</td>
+            <td>Tầng {{ room.floor }}</td>
+
+            <td>{{ room.width * room.length }} m²</td>
+
+            <td>
+              <span *ngIf="room.gender_restriction === 'ALL'">Tất cả</span>
+              <span *ngIf="room.gender_restriction === 'MALE'">Chỉ Nam</span>
+              <span *ngIf="room.gender_restriction === 'FEMALE'">Chỉ Nữ</span>
+            </td>
+
+            <td class="price">{{ room.base_price | number:'1.0-0' }} đ</td>
+            <td>{{ room.current_occupants || 0 }} / {{ room.max_occupants }}</td>
+
+            <td>
+              <a *ngIf="room.images" [href]="room.images" target="_blank"
+                style="color: #3498db; text-decoration: none; font-weight: 500;">Xem ảnh</a>
+              <span *ngIf="!room.images" style="color: #95a5a6;">---</span>
+            </td>
+
+            <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+              [title]="room.description">
+              {{ room.description || '---' }}
+            </td>
+
+            <td>
+              <span class="badge" [ngClass]="{
+                      'badge-success': room.status === 'AVAILABLE', 
+                      'badge-warning': room.status === 'OCCUPIED' && (room.current_occupants || 0) < room.max_occupants,
+                      'badge-danger': room.status === 'OCCUPIED' && (room.current_occupants || 0) >= room.max_occupants,
+                      'badge-dark': room.status === 'MAINTENANCE'
+                    }">
+
+                <ng-container *ngIf="room.status === 'AVAILABLE'">Trống hoàn toàn</ng-container>
+
+                <ng-container *ngIf="room.status === 'OCCUPIED'">
+                  {{ (room.current_occupants || 0) < room.max_occupants ? 'Còn chỗ ghép' : 'Đã Kín Phòng' }} 
+                </ng-container>
+
+                <ng-container *ngIf="room.status === 'MAINTENANCE'">Đang bảo trì</ng-container>
+              </span>
+            </td>
+            <td class="actions">
+              <button *ngIf="userRole === 'OWNER'" class="btn-edit" (click)="openEditModal(room)">Sửa</button>
+              <button class="btn-info" (click)="openServiceModal(room.id)">Dịch vụ</button>
+              <button *ngIf="userRole === 'OWNER'" class="btn-delete" (click)="deleteRoom(room.id)">Xóa</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="totalPages > 0"
+      style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+      <div style="color: #7f8c8d; font-size: 14px;">
+        Hiển thị <b>{{ roomList.length }}</b> / Tổng <b>{{ totalRecords }}</b> phòng
+      </div>
+
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+          [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+          ❮ Trước
+        </button>
+
+        <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
+
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
+          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+          [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+          Sau ❯
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && roomList.length === 0">
+    <p>Chưa có phòng nào trong hệ thống.</p>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>{{ isEditMode ? 'Sửa Thông Tin Phòng' : 'Thêm Phòng Mới' }}</h3>
+      <button class="btn-close" (click)="closeModal()">×</button>
+    </div>
+
+    <form [formGroup]="roomForm" (ngSubmit)="saveRoom()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Chọn Khu Trọ / Tòa Nhà</label>
+          <select formControlName="house_id">
+            <option value="" disabled selected>-- Chọn nhà --</option>
+            <option *ngFor="let house of houseList" [value]="house.id">
+              {{ house.name }} ({{ house.address }})
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Số phòng</label>
+          <input type="text" formControlName="room_number" placeholder="VD: 101">
+        </div>
+        <div class="form-group">
+          <label>Tầng</label>
+          <input type="number" formControlName="floor">
+        </div>
+        <div class="form-group">
+          <label>Giá cơ bản (VNĐ)</label>
+          <input type="number" formControlName="base_price">
+        </div>
+        <div class="form-group">
+          <label>Chiều rộng (m)</label>
+          <input type="number" formControlName="width">
+        </div>
+        <div class="form-group">
+          <label>Chiều dài (m)</label>
+          <input type="number" formControlName="length">
+        </div>
+        <div class="form-group">
+          <label>Sức chứa (Người)</label>
+          <input type="number" formControlName="max_occupants">
+        </div>
+        <div class="form-group">
+          <label>Đối tượng thuê</label>
+          <select formControlName="gender_restriction">
+            <option value="ALL">Tất cả</option>
+            <option value="MALE">Chỉ Nam</option>
+            <option value="FEMALE">Chỉ Nữ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Trạng thái</label>
+          <select formControlName="status">
+            <option value="AVAILABLE">Trống</option>
+            <option value="OCCUPIED">Đang thuê / Có người</option>
+            <option value="MAINTENANCE">Đang bảo trì</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group full-width">
+        <label>Mô tả thêm</label>
+        <textarea formControlName="description" rows="3"></textarea>
+      </div>
+
+      <div class="form-group full-width">
+        <label>Link ảnh hiện trạng phòng (Tùy chọn)</label>
+        <input type="text" formControlName="images" placeholder="Dán link thư mục ảnh Google Drive/Imgur vào đây">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
+        <button type="submit" class="btn-save">{{ isEditMode ? 'Cập nhật' : 'Lưu Phòng' }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showServiceModal">
+  <div class="modal-content" style="max-width: 450px;">
+    <div class="modal-header">
+      <h3>Cài đặt Dịch Vụ - Phòng #{{ selectedRoomIdForService }}</h3>
+      <button class="btn-close" (click)="closeServiceModal()">×</button>
+    </div>
+
+    <div style="padding: 20px;">
+      <p style="margin-top: 0; color: #7f8c8d; font-size: 14px;">Chọn các dịch vụ áp dụng cho phòng này:</p>
+
+      <div *ngIf="availableServices.length === 0" style="color: #e74c3c;">
+        Chưa có dịch vụ nào trong hệ thống. Hãy sang tab Dịch Vụ để thêm trước!
+      </div>
+
+      <div class="checkbox-list">
+        <label class="checkbox-item" *ngFor="let srv of availableServices">
+          <input type="checkbox" [value]="srv.id" [checked]="selectedServiceIds.includes(srv.id)"
+            (change)="toggleService(srv.id, $event)">
+          <div class="srv-info">
+            <span class="srv-name">{{ srv.name }}</span>
+            <span class="srv-price">{{ srv.unit_price | number:'1.0-0' }}đ / {{ srv.unit }}</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="padding: 15px 20px; border-top: 1px solid #eee;">
+      <button class="btn-cancel" (click)="closeServiceModal()">Hủy</button>
+      <button class="btn-save" (click)="saveRoomServices()">Lưu Cài Đặt</button>
+    </div>
+  </div>
+</div>

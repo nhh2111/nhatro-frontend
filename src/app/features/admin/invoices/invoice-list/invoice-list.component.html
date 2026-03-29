@@ -1,0 +1,108 @@
+<div class="page-container">
+    <div class="page-header">
+        <h2>Quản lý Hóa Đơn & Thu Tiền</h2>
+        <div class="header-actions">
+            <input type="month" [(ngModel)]="selectedMonth" (change)="onMonthChange()">
+            <button class="btn-add" (click)="triggerGenerate()">Chốt Sổ Tháng {{selectedMonth}}</button>
+        </div>
+    </div>
+
+    <div class="loading-msg" *ngIf="isLoading">Đang xử lý dữ liệu...</div>
+
+    <div class="invoice-grid" *ngIf="!isLoading && invoices.length > 0">
+        <div class="invoice-card" *ngFor="let inv of invoices" [ngClass]="inv.status">
+            <div class="card-header">
+                <span class="room-no">Phòng {{ inv.Contract?.Room?.room_number }}</span>
+                <span class="status-badge">{{ inv.status === 'PAID' ? ' Đã thu đủ' : (inv.status === 'PARTIAL' ? ' Còn thiếu' : ' Chưa thu') }}</span>
+            </div>
+
+            <div class="card-content">
+                <p><strong>Khách:</strong> {{ inv.Contract?.Tenant?.full_name }}</p>
+                <p><strong>Tổng tiền:</strong> <span class="text-danger">{{ inv.total_amount | number }}đ</span></p>
+                <p><strong>Đã thu:</strong> <span class="text-success">{{ inv.paid_amount | number }}đ</span></p>
+                <div class="balance" *ngIf="inv.total_amount - inv.paid_amount > 0">
+                    <strong>Còn nợ:</strong> {{ (inv.total_amount - inv.paid_amount) | number }}đ
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn-pay" *ngIf="inv.status !== 'PAID'" (click)="handlePay(inv)">Thu tiền</button>
+                <button class="btn-info" (click)="viewDetail(inv)">Chi tiết</button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="!isLoading && totalPages > 0" style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div style="color: #7f8c8d; font-size: 14px;">
+            Hiển thị <b>{{ invoices.length }}</b> / Tổng <b>{{ totalRecords }}</b> hóa đơn
+        </div>
+        
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" 
+                    style="padding: 8px 15px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; transition: 0.2s;"
+                    [style.opacity]="currentPage === 1 ? '0.5' : '1'"
+                    onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+                ❮ Trước
+            </button>
+
+            <span style="font-weight: 600; padding: 0 15px; color: #2c3e50;">Trang {{ currentPage }} / {{ totalPages }}</span>
+
+            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" 
+                    style="padding: 8px 15px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; transition: 0.2s;"
+                    [style.opacity]="currentPage === totalPages ? '0.5' : '1'"
+                    onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+                Sau ❯
+            </button>
+        </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading && invoices.length === 0">
+        <p>Chưa có hóa đơn nào cho tháng này. Hãy nhấn "Chốt Sổ" để tạo hóa đơn tự động!</p>
+    </div>
+
+    <div class="modal-overlay" *ngIf="showDetailModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>Chi Tiết Hóa Đơn - P.{{ selectedInvoice?.Contract?.Room?.room_number }}</h3>
+                <button class="btn-close" (click)="closeDetailModal()">×</button>
+            </div>
+
+            <div class="modal-body" style="padding: 20px;">
+                <div class="inv-info-header" style="margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">
+                    <p><strong>Kỳ hóa đơn:</strong> {{ selectedInvoice?.month_year }}</p>
+                    <p><strong>Khách hàng:</strong> {{ selectedInvoice?.Contract?.Tenant?.full_name }}</p>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nội dung</th>
+                            <th style="text-align: center;">SL</th>
+                            <th style="text-align: right;">Đơn giá</th>
+                            <th style="text-align: right;">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of selectedInvoice?.Items">
+                            <td>{{ item.description }}</td>
+                            <td style="text-align: center;">{{ item.quantity }}</td>
+                            <td style="text-align: right;">{{ item.unit_price | number }}</td>
+                            <td style="text-align: right;" class="fw-bold">{{ item.amount | number }}đ</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold">TỔNG CỘNG:</td>
+                            <td class="text-danger fw-bold" style="font-size: 18px; text-align: right;">
+                                {{ selectedInvoice?.total_amount | number }}đ
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" (click)="closeDetailModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>

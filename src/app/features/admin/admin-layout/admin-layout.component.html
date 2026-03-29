@@ -1,0 +1,48 @@
+<div class="admin-wrapper">
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>QL Nhà Trọ</h2>
+    </div>
+    <nav class="menu">
+      <a routerLink="/admin/houses" routerLinkActive="active" class="menu-item">Khu trọ / Tòa nhà</a>
+      <a routerLink="/admin/rooms" routerLinkActive="active" class="menu-item">Danh sách Phòng</a>
+      <a routerLink="/admin/services" routerLinkActive="active" class="menu-item">Dịch vụ</a>
+      
+      <a routerLink="/admin/tenants" routerLinkActive="active" class="menu-item">Khách thuê</a>
+      <a routerLink="/admin/contracts" routerLinkActive="active" class="menu-item">Hợp đồng</a>
+      <a routerLink="/admin/meter-readings" routerLinkActive="active" class="menu-item">Ghi Điện/Nước</a>
+      <a routerLink="/admin/invoices" routerLinkActive="active" class="menu-item">Hóa đơn & Thu tiền</a>
+      <a routerLink="/admin/tasks" routerLinkActive="active" class="menu-item">Yêu cầu & Sự cố</a>
+      
+      <a *ngIf="userRole === 'OWNER'" routerLink="/admin/users" routerLinkActive="active" class="menu-item">Nhân viên</a>
+
+      <a routerLink="/admin/profile" routerLinkActive="active" class="menu-item" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+        Hồ sơ cá nhân
+      </a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    
+    <header class="topbar">
+      <div class="user-info" routerLink="/admin/profile" style="cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 5px 10px; border-radius: 5px; transition: background 0.3s;" onmouseover="this.style.background='#f1f2f6'" onmouseout="this.style.background='transparent'">
+        
+        <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" 
+             style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #3498db;">
+        
+        <div *ngIf="!avatarUrl" 
+             style="width: 38px; height: 38px; border-radius: 50%; background: #3498db; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">
+          {{ fullName.charAt(0) | uppercase }}
+        </div>
+
+        <span style="font-size: 15px; color: #2c3e50;">Xin chào, <strong>{{ fullName }}</strong></span>
+      </div>
+
+      <button class="btn-logout" (click)="logout()">Đăng xuất</button>
+    </header>
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+    
+  </main>
+</div>
