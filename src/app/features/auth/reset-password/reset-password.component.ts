@@ -56,16 +56,12 @@ export class ResetPasswordComponent implements OnInit {
     this.authService.confirmNewPassword(payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        if (res.errorCode === 200) {
-          alert('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.');
-          this.router.navigate(['/login']);
-        } else {
-          this.errorMessage = res.message || 'Mã OTP không hợp lệ hoặc đã hết hạn.';
-        }
+        alert('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.');
+        this.router.navigate(['/login']);
       },
-      error: () => {
+      error: (err) => {
         this.isLoading = false;
-        this.errorMessage = 'Lỗi kết nối đến máy chủ.';
+        this.errorMessage = err.error?.message || err.error?.error || 'Mã OTP không hợp lệ hoặc đã hết hạn.';
       }
     });
   }

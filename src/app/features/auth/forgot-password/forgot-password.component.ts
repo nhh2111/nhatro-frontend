@@ -35,15 +35,12 @@ export class ForgotPasswordComponent {
     this.authService.requestPasswordReset(email).subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        if (res.errorCode === 200) {
-          this.router.navigate(['/reset-password'], { queryParams: { email: email } });
-        } else {
-          this.errorMessage = res.message || 'Có lỗi xảy ra, vui lòng thử lại.';
-        }
+        alert('Mã OTP đã được gửi! Vui lòng kiểm tra hộp thư của bạn.'); 
+        this.router.navigate(['/reset-password'], { queryParams: { email: email } });
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = 'Lỗi kết nối đến máy chủ.';
+        this.errorMessage = err.error?.message || err.error?.error || 'Email không tồn tại hoặc có lỗi xảy ra.';
       }
     });
   }
