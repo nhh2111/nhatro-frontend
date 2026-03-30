@@ -4,10 +4,10 @@
         <button class="btn-add" (click)="openAddModal()">+ Thêm Khách Mới</button>
     </div>
     <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" 
-               placeholder="Tìm theo Tên, SĐT, CCCD..." 
-               style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
-        <button (click)="onSearch()" style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
+        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Tìm theo Tên, SĐT, CCCD..."
+            style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
+        <button (click)="onSearch()"
+            style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
             Tìm kiếm
         </button>
     </div>
@@ -16,55 +16,61 @@
     <div class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
 
     <div class="table-card" *ngIf="!isLoading && tenantList.length > 0">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Họ Tên</th>
-                    <th>SĐT</th>
-                    <th>CCCD/CMND</th>
-                    <th>Biển Số Xe</th>
-                    <th>Quê Quán</th>
-                    <th>Hành Động</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let tenant of tenantList">
-                    <td>#{{ tenant.id }}</td>
-                    <td class="fw-bold">{{ tenant.full_name }}</td>
-                    <td style="color: #2980b9; font-weight: 600;">{{ tenant.phone }}</td>
-                    <td class="fw-bold">{{ tenant.cccd }}</td>
-                    <td>
-                        <span *ngIf="tenant.vehicle_type === 'MOTORBIKE'" style="font-size: 12px; color: #e67e22;">(Xe máy)</span>
-                        <span *ngIf="tenant.vehicle_type === 'CAR'" style="font-size: 12px; color: #27ae60;">(Ô tô)</span>
-                        {{ tenant.license_plates || '---' }}
-                    </td>
-                    <td>{{ tenant.address || '---' }}</td>
-                    <td class="actions">
-                        <button class="btn-edit" (click)="openEditModal(tenant)">Sửa</button>
-                        <button *ngIf="userRole === 'OWNER'" class="btn-delete" (click)="deleteTenant(tenant.id)">Xóa</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Họ Tên</th>
+                        <th>SĐT</th>
+                        <th>CCCD/CMND</th>
+                        <th>Biển Số Xe</th>
+                        <th>Quê Quán</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let tenant of tenantList">
+                        <td>#{{ tenant.id }}</td>
+                        <td class="fw-bold">{{ tenant.full_name }}</td>
+                        <td style="color: #2980b9; font-weight: 600;">{{ tenant.phone }}</td>
+                        <td class="fw-bold">{{ tenant.cccd }}</td>
+                        <td>
+                            <span *ngIf="tenant.vehicle_type === 'MOTORBIKE'"
+                                style="font-size: 12px; color: #e67e22;">(Xe máy)</span>
+                            <span *ngIf="tenant.vehicle_type === 'CAR'" style="font-size: 12px; color: #27ae60;">(Ô
+                                tô)</span>
+                            {{ tenant.license_plates || '---' }}
+                        </td>
+                        <td>{{ tenant.address || '---' }}</td>
+                        <td class="actions">
+                            <button class="btn-edit" (click)="openEditModal(tenant)">Sửa</button>
+                            <button *ngIf="userRole === 'OWNER'" class="btn-delete"
+                                (click)="deleteTenant(tenant.id)">Xóa</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div *ngIf="totalPages > 0" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div *ngIf="totalPages > 0"
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         <div style="color: #7f8c8d; font-size: 14px;">
             Hiển thị <b>{{ tenantList.length }}</b> / Tổng <b>{{ totalRecords }}</b> khách thuê
         </div>
-        
+
         <div style="display: flex; gap: 8px; align-items: center;">
-            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" 
-                    style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-                    [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+                [style.opacity]="currentPage === 1 ? '0.5' : '1'">
                 ❮ Trước
             </button>
 
             <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
 
-            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" 
-                    style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-                    [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
+                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+                [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
                 Sau ❯
             </button>
         </div>
@@ -125,21 +131,24 @@
                         </div>
                         <div style="flex: 2;">
                             <label>Các Biển Số Xe</label>
-                            <input type="text" formControlName="license_plates" placeholder="VD: 29H1-123.45, 30G-777.88">
+                            <input type="text" formControlName="license_plates"
+                                placeholder="VD: 29H1-123.45, 30G-777.88">
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group full-width">
                     <label>Link ảnh CCCD (Tùy chọn)</label>
-                    <input type="text" formControlName="image_url" placeholder="Dán link ảnh (Google Drive/Imgur...) vào đây">
+                    <input type="text" formControlName="image_url"
+                        placeholder="Dán link ảnh (Google Drive/Imgur...) vào đây">
                 </div>
 
                 <div class="form-group full-width">
                     <label>Địa chỉ / Quê quán</label>
                     <textarea formControlName="address" rows="2" placeholder="Nhập địa chỉ thường trú..."></textarea>
                 </div>
-            </div> <div class="modal-footer">
+            </div>
+            <div class="modal-footer">
                 <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
                 <button type="submit" class="btn-save">{{ isEditMode ? 'Lưu Thay Đổi' : 'Tạo Hồ Sơ' }}</button>
             </div>

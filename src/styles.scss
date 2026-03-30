@@ -1,1 +1,194 @@
-/* You can add global styles to this file, and also import other style files */
+/* ==========================================================================
+   1. CẤU HÌNH GỐC (BIẾN MÀU VÀ FONT)
+   ========================================================================== */
+:root {
+  --primary: #3498db;
+  --success: #27ae60;
+  --danger: #e74c3c;
+  --warning: #f39c12;
+  --info: #2980b9;
+  --text-main: #2c3e50;
+  --text-muted: #7f8c8d;
+  --bg-light: #f4f7f6;
+}
+
+html, body {
+  margin: 0; padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-main);
+  background-color: var(--bg-light);
+  font-size: 16px; /* Kích thước chuẩn trên PC */
+}
+
+/* ==========================================================================
+   2. BỐ CỤC CHUNG CỦA CÁC TRANG (PAGE HEADER, CARDS)
+   ========================================================================== */
+.page-container { padding: 20px; }
+
+.page-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+  h2 { margin: 0; color: var(--text-main); font-size: 1.5rem; }
+  
+  .btn-add {
+    background-color: var(--success); color: white; padding: 10px 20px;
+    border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
+    &:hover { background-color: #219653; }
+  }
+}
+
+.table-card {
+  background: white; border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden;
+}
+
+.empty-state, .loading-msg, .error-msg {
+  text-align: center; padding: 30px; background: white; border-radius: 8px; color: var(--text-muted);
+}
+
+/* ==========================================================================
+   3. BẢNG DỮ LIỆU (DATA TABLE) - TỰ ĐỘNG CUỘN TRÊN MOBILE
+   ========================================================================== */
+.table-responsive {
+  width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%; border-collapse: collapse; min-width: 600px; /* Ép bảng không bị bóp nghẹt */
+  
+  th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+  th { background-color: #f8f9fa; font-weight: 600; color: #495057; white-space: nowrap; }
+  
+  .fw-bold { font-weight: bold; color: var(--info); }
+  .price { font-weight: 500; color: var(--danger); }
+  
+  .badge {
+    padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap;
+    &-success { background-color: #e8f8f5; color: var(--success); }
+    &-warning { background-color: #fef9e7; color: var(--warning); }
+    &-danger { background-color: #fdedec; color: var(--danger); }
+    &-info { background-color: #d6eaf8; color: var(--info); }
+  }
+  
+  .actions {
+    display: flex; gap: 10px;
+    button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+    .btn-edit { background-color: var(--primary); color: white; &:hover { background-color: var(--info); } }
+    .btn-delete { background-color: var(--danger); color: white; &:hover { background-color: #c0392b; } }
+    .btn-info { background-color: #17a2b8; color: white; &:hover { background-color: #138496; } }
+  }
+}
+
+/* ==========================================================================
+   4. MODAL (POPUP FORM)
+   ========================================================================== */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center;
+  z-index: 1000; backdrop-filter: blur(3px); padding: 10px;
+}
+
+.modal-content {
+  background: white; width: 700px; max-width: 100%; border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column;
+  max-height: 90vh; /* Không cho modal vượt quá màn hình */
+  animation: slideDown 0.3s ease-out;
+
+  @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #eee;
+    h3 { margin: 0; color: var(--text-main); }
+    .btn-close { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; &:hover { color: var(--danger); } }
+  }
+
+  form {
+    padding: 20px; overflow-y: auto; /* Cho phép cuộn bên trong form nếu form quá dài */
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-group {
+      display: flex; flex-direction: column;
+      &.full-width { grid-column: span 2; }
+      label { font-size: 14px; font-weight: 600; color: #34495e; margin-bottom: 5px; }
+      input, select, textarea {
+        padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; font-family: inherit;
+        &:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
+      }
+    }
+
+    .modal-footer {
+      display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee;
+      button { padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+      .btn-cancel { background-color: #ecf0f1; color: var(--text-muted); &:hover { background-color: #bdc3c7; } }
+      .btn-save { background-color: var(--info); color: white; &:hover { background-color: #2471a3; } }
+    }
+  }
+}
+
+/* ==========================================================================
+   5. RESPONSIVE (TỰ ĐỘNG THU NHỎ TRÊN ĐIỆN THOẠI)
+   ========================================================================== */
+@media (max-width: 768px) {
+  html, body { font-size: 14px; } /* Thu nhỏ toàn bộ chữ */
+  .page-container { padding: 10px; }
+  
+  .page-header {
+    flex-direction: column; align-items: flex-start; gap: 10px;
+    .btn-add { width: 100%; } /* Nút Thêm kéo dài toàn màn hình cho dễ bấm */
+  }
+
+  .data-table th, .data-table td { padding: 10px; } /* Thu nhỏ lề bảng */
+  
+  /* Ép Form 2 cột biến thành 1 cột trên điện thoại */
+  .modal-content form .form-grid { grid-template-columns: 1fr; }
+  .modal-content form .form-group.full-width { grid-column: span 1; }
+}
+
+/* ==========================================================================
+   6. GIAO DIỆN XÁC THỰC (LOGIN, REGISTER, OTP)
+   ========================================================================== */
+.login-wrapper {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 15px; /* Thêm padding để trên mobile thẻ không bị sát mép màn hình */
+}
+
+.login-card {
+  background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  width: 100%; max-width: 400px; text-align: center;
+  
+  h2 { color: var(--text-main); margin-bottom: 10px; font-size: 24px; }
+  .subtitle { color: var(--text-muted); margin-bottom: 30px; font-size: 14px; }
+}
+
+.btn-login {
+  width: 100%; padding: 12px; background-color: var(--primary); color: white; border: none;
+  border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 10px;
+  &:hover { background-color: var(--info); }
+  &:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+}
+
+.auth-links {
+  margin-top: 20px; font-size: 14px; color: var(--text-muted);
+  a { color: var(--primary); text-decoration: none; font-weight: 600; &:hover { text-decoration: underline; } }
+}
+
+/* Form Input Chung (Dùng được cho cả Profile và Login) */
+.form-group {
+  text-align: left; margin-bottom: 20px; display: flex; flex-direction: column;
+  label { font-size: 14px; font-weight: 600; color: #34495e; margin-bottom: 8px; }
+  input, select, textarea {
+    width: 100%; padding: 12px 15px; border: 1px solid #dcdde1; border-radius: 6px; font-size: 15px;
+    font-family: inherit; transition: all 0.3s ease; box-sizing: border-box;
+    &:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); }
+    &:disabled, &[readonly] { background-color: #f8f9fa; color: #7f8c8d; cursor: not-allowed; border-color: #ecf0f1; }
+  }
+}
+
+/* ==========================================================================
+   7. RESPONSIVE BỔ SUNG CHO FORM VÀ PROFILE TRÊN MOBILE
+   ========================================================================== */
+@media (max-width: 768px) {
+  .login-card { padding: 25px 20px; } /* Thu nhỏ lề card đăng nhập trên điện thoại */
+  .form-grid { grid-template-columns: 1fr !important; } /* Ép Form 2 cột về 1 cột */
+  .form-group.full-width { grid-column: span 1 !important; }
+}

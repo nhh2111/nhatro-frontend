@@ -5,12 +5,12 @@
   </div>
 
   <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
-    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" 
-           placeholder="Tìm theo Số phòng, Tên khách..." 
-           style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
-    
-    <button (click)="onSearch()" 
-            style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
+    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+      placeholder="Tìm theo Số phòng, Tên khách..."
+      style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
+
+    <button (click)="onSearch()"
+      style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
       Tìm kiếm
     </button>
   </div>
@@ -19,56 +19,60 @@
   <div class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
 
   <div class="table-card" *ngIf="!isLoading && contractList.length > 0">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Mã HĐ</th>
-          <th>Phòng</th>
-          <th>Người Thuê</th>
-          <th>Ngày Bắt Đầu</th>
-          <th>Ngày Kết Thúc</th>
-          <th>Tiền Cọc</th>
-          <th>Trạng Thái</th>
-          <th>Hành Động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let c of contractList">
-          <td>#{{ c.id }}</td>
-          <td class="fw-bold">P.{{ c.Room?.room_number }}</td>
-          <td>{{ c.Tenant?.full_name }}</td>
-          <td>{{ c.start_date | date:'dd/MM/yyyy' }}</td>
-          <td>{{ c.end_date | date:'dd/MM/yyyy' }}</td>
-          <td class="price">{{ c.deposit_amount | number:'1.0-0' }} đ</td>
-          <td>
-            <span class="badge" [ngClass]="c.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'">
-              {{ c.status === 'ACTIVE' ? 'Đang hiệu lực' : 'Đã thanh lý' }}
-            </span>
-          </td>
-          <td class="actions">
-            <button class="btn-delete" *ngIf="c.status === 'ACTIVE'" (click)="terminateContract(c.id)">Thanh lý</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Mã HĐ</th>
+            <th>Phòng</th>
+            <th>Người Thuê</th>
+            <th>Ngày Bắt Đầu</th>
+            <th>Ngày Kết Thúc</th>
+            <th>Tiền Cọc</th>
+            <th>Trạng Thái</th>
+            <th>Hành Động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of contractList">
+            <td>#{{ c.id }}</td>
+            <td class="fw-bold">P.{{ c.Room?.room_number }}</td>
+            <td>{{ c.Tenant?.full_name }}</td>
+            <td>{{ c.start_date | date:'dd/MM/yyyy' }}</td>
+            <td>{{ c.end_date | date:'dd/MM/yyyy' }}</td>
+            <td class="price">{{ c.deposit_amount | number:'1.0-0' }} đ</td>
+            <td>
+              <span class="badge" [ngClass]="c.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'">
+                {{ c.status === 'ACTIVE' ? 'Đang hiệu lực' : 'Đã thanh lý' }}
+              </span>
+            </td>
+            <td class="actions">
+              <button class="btn-delete" *ngIf="c.status === 'ACTIVE'" (click)="terminateContract(c.id)">Thanh
+                lý</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <div *ngIf="totalPages > 0" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
+    <div *ngIf="totalPages > 0"
+      style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
       <div style="color: #7f8c8d; font-size: 14px;">
         Hiển thị <b>{{ contractList.length }}</b> / Tổng <b>{{ totalRecords }}</b> hợp đồng
       </div>
-      
+
       <div style="display: flex; gap: 8px; align-items: center;">
-        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-                [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+          [style.opacity]="currentPage === 1 ? '0.5' : '1'">
           ❮ Trước
         </button>
 
         <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
 
-        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-                [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
+          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+          [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
           Sau ❯
         </button>
       </div>
@@ -89,7 +93,7 @@
 
     <form [formGroup]="contractForm" (ngSubmit)="saveContract()">
       <div class="form-grid">
-        
+
         <div class="form-group full-width">
           <label>Chọn Phòng Đang Trống</label>
           <select formControlName="room_id">
@@ -127,7 +131,7 @@
         </div>
 
       </div>
-      
+
       <div class="modal-footer">
         <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
         <button type="submit" class="btn-save" [disabled]="availableRooms.length === 0">Lập Hợp Đồng</button>

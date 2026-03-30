@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router'; 
+import { RouterModule, Router } from '@angular/router';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { ProfileService } from '../../../services/profile.service';
@@ -8,14 +8,16 @@ import { ProfileService } from '../../../services/profile.service';
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive], 
+  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive],
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.scss']
 })
-export class AdminLayoutComponent implements OnInit{
+export class AdminLayoutComponent implements OnInit {
   private profileService = inject(ProfileService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  
+  isSidebarOpen = false;
   fullName: string = 'Đang tải...';
   avatarUrl: string = '';
   userRole: string = '';
@@ -44,5 +46,13 @@ export class AdminLayoutComponent implements OnInit{
   logout(): void {
     this.authService.clearTokens();
     this.router.navigate(['/login']);
+  }
+
+  toggleSidebar() {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  closeSidebar() {
+    this.isSidebarOpen = false;
   }
 }

@@ -5,11 +5,11 @@
   </div>
 
   <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
-    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" 
-           placeholder="Tìm theo tên, email nhân viên..." 
-           style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
-    <button (click)="onSearch()" 
-            style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
+    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+      placeholder="Tìm theo tên, email nhân viên..."
+      style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
+    <button (click)="onSearch()"
+      style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
       Tìm kiếm
     </button>
   </div>
@@ -18,53 +18,56 @@
   <div class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
 
   <div class="table-card" *ngIf="!isLoading && userList.length > 0">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Họ Tên</th>
-          <th>Email</th>
-          <th>Vai Trò</th>
-          <th>Trạng Thái</th>
-          <th>Hành Động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of userList">
-          <td>#{{ user.id }}</td>
-          <td class="fw-bold">{{ user.full_name }}</td>
-          <td>{{ user.email }}</td>
-          <td><span class="badge badge-info">{{ user.role }}</span></td>
-          <td>
-            <span class="badge" [ngClass]="user.status ? 'badge-success' : 'badge-danger'">
-              {{ user.status ? 'Hoạt động' : 'Đã khóa' }}
-            </span>
-          </td>
-          <td class="actions">
-            <button class="btn-edit" (click)="openEditModal(user)">Sửa</button>
-            <button class="btn-delete" (click)="deleteUser(user.id)">Xóa</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Họ Tên</th>
+            <th>Email</th>
+            <th>Vai Trò</th>
+            <th>Trạng Thái</th>
+            <th>Hành Động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of userList">
+            <td>#{{ user.id }}</td>
+            <td class="fw-bold">{{ user.full_name }}</td>
+            <td>{{ user.email }}</td>
+            <td><span class="badge badge-info">{{ user.role }}</span></td>
+            <td>
+              <span class="badge" [ngClass]="user.status ? 'badge-success' : 'badge-danger'">
+                {{ user.status ? 'Hoạt động' : 'Đã khóa' }}
+              </span>
+            </td>
+            <td class="actions">
+              <button class="btn-edit" (click)="openEditModal(user)">Sửa</button>
+              <button class="btn-delete" (click)="deleteUser(user.id)">Xóa</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <div *ngIf="totalPages > 0" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
+    <div *ngIf="totalPages > 0"
+      style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
       <div style="color: #7f8c8d; font-size: 14px;">
         Hiển thị <b>{{ userList.length }}</b> / Tổng <b>{{ totalRecords }}</b> nhân viên
       </div>
-      
+
       <div style="display: flex; gap: 8px; align-items: center;">
-        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-                [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+          [style.opacity]="currentPage === 1 ? '0.5' : '1'">
           ❮ Trước
         </button>
 
         <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
 
-        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" 
-                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-                [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
+          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
+          [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
           Sau ❯
         </button>
       </div>
@@ -85,11 +88,12 @@
 
     <form [formGroup]="userForm" (ngSubmit)="saveUser()">
       <div class="form-grid" style="grid-template-columns: 1fr;">
-        
+
         <div class="form-group">
           <label>Địa chỉ Email (Dùng để đăng nhập)</label>
           <input type="email" formControlName="email" placeholder="VD: nguyenvanb@gmail.com">
-          <small *ngIf="!isEditMode" style="color: #7f8c8d; display: block; margin-top: 5px;">Mật khẩu mặc định sẽ là 123456</small>
+          <small *ngIf="!isEditMode" style="color: #7f8c8d; display: block; margin-top: 5px;">Mật khẩu mặc định sẽ là
+            123456</small>
         </div>
 
         <div class="form-group">
@@ -106,7 +110,7 @@
         </div>
 
       </div>
-      
+
       <div class="modal-footer">
         <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
         <button type="submit" class="btn-save">{{ isEditMode ? 'Lưu Thay Đổi' : 'Tạo Tài Khoản' }}</button>

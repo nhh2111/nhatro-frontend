@@ -17,75 +17,77 @@
 
   <div class="table-card" *ngIf="!isLoading && roomList.length > 0">
     <div style="overflow-x: auto;">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Khu Trọ / Nhà</th>
-            <th>Số Phòng</th>
-            <th>Tầng</th>
-            <th>Diện Tích</th>
-            <th>Giới Tính</th>
-            <th>Giá Cơ Bản</th>
-            <th>Sức Chứa</th>
-            <th>Hình Ảnh</th>
-            <th style="max-width: 150px;">Mô Tả</th>
-            <th>Trạng Thái</th>
-            <th>Hành Động</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let room of roomList">
-            <td class="fw-bold" style="color: #2c3e50;">{{ getHouseName(room.house_id) }}</td>
-            <td class="fw-bold">{{ room.room_number }}</td>
-            <td>Tầng {{ room.floor }}</td>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Khu Trọ / Nhà</th>
+              <th>Số Phòng</th>
+              <th>Tầng</th>
+              <th>Diện Tích</th>
+              <th>Giới Tính</th>
+              <th>Giá Cơ Bản</th>
+              <th>Sức Chứa</th>
+              <th>Hình Ảnh</th>
+              <th style="max-width: 150px;">Mô Tả</th>
+              <th>Trạng Thái</th>
+              <th>Hành Động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let room of roomList">
+              <td class="fw-bold" style="color: #2c3e50;">{{ getHouseName(room.house_id) }}</td>
+              <td class="fw-bold">{{ room.room_number }}</td>
+              <td>Tầng {{ room.floor }}</td>
 
-            <td>{{ room.width * room.length }} m²</td>
+              <td>{{ room.width * room.length }} m²</td>
 
-            <td>
-              <span *ngIf="room.gender_restriction === 'ALL'">Tất cả</span>
-              <span *ngIf="room.gender_restriction === 'MALE'">Chỉ Nam</span>
-              <span *ngIf="room.gender_restriction === 'FEMALE'">Chỉ Nữ</span>
-            </td>
+              <td>
+                <span *ngIf="room.gender_restriction === 'ALL'">Tất cả</span>
+                <span *ngIf="room.gender_restriction === 'MALE'">Chỉ Nam</span>
+                <span *ngIf="room.gender_restriction === 'FEMALE'">Chỉ Nữ</span>
+              </td>
 
-            <td class="price">{{ room.base_price | number:'1.0-0' }} đ</td>
-            <td>{{ room.current_occupants || 0 }} / {{ room.max_occupants }}</td>
+              <td class="price">{{ room.base_price | number:'1.0-0' }} đ</td>
+              <td>{{ room.current_occupants || 0 }} / {{ room.max_occupants }}</td>
 
-            <td>
-              <a *ngIf="room.images" [href]="room.images" target="_blank"
-                style="color: #3498db; text-decoration: none; font-weight: 500;">Xem ảnh</a>
-              <span *ngIf="!room.images" style="color: #95a5a6;">---</span>
-            </td>
+              <td>
+                <a *ngIf="room.images" [href]="room.images" target="_blank"
+                  style="color: #3498db; text-decoration: none; font-weight: 500;">Xem ảnh</a>
+                <span *ngIf="!room.images" style="color: #95a5a6;">---</span>
+              </td>
 
-            <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-              [title]="room.description">
-              {{ room.description || '---' }}
-            </td>
+              <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                [title]="room.description">
+                {{ room.description || '---' }}
+              </td>
 
-            <td>
-              <span class="badge" [ngClass]="{
+              <td>
+                <span class="badge" [ngClass]="{
                       'badge-success': room.status === 'AVAILABLE', 
                       'badge-warning': room.status === 'OCCUPIED' && (room.current_occupants || 0) < room.max_occupants,
                       'badge-danger': room.status === 'OCCUPIED' && (room.current_occupants || 0) >= room.max_occupants,
                       'badge-dark': room.status === 'MAINTENANCE'
                     }">
 
-                <ng-container *ngIf="room.status === 'AVAILABLE'">Trống hoàn toàn</ng-container>
+                  <ng-container *ngIf="room.status === 'AVAILABLE'">Trống hoàn toàn</ng-container>
 
-                <ng-container *ngIf="room.status === 'OCCUPIED'">
-                  {{ (room.current_occupants || 0) < room.max_occupants ? 'Còn chỗ ghép' : 'Đã Kín Phòng' }} 
-                </ng-container>
+                  <ng-container *ngIf="room.status === 'OCCUPIED'">
+                    {{ (room.current_occupants || 0) < room.max_occupants ? 'Còn chỗ ghép' : 'Đã Kín Phòng' }}
+                      </ng-container>
 
-                <ng-container *ngIf="room.status === 'MAINTENANCE'">Đang bảo trì</ng-container>
-              </span>
-            </td>
-            <td class="actions">
-              <button *ngIf="userRole === 'OWNER'" class="btn-edit" (click)="openEditModal(room)">Sửa</button>
-              <button class="btn-info" (click)="openServiceModal(room.id)">Dịch vụ</button>
-              <button *ngIf="userRole === 'OWNER'" class="btn-delete" (click)="deleteRoom(room.id)">Xóa</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                      <ng-container *ngIf="room.status === 'MAINTENANCE'">Đang bảo trì</ng-container>
+                </span>
+              </td>
+              <td class="actions">
+                <button *ngIf="userRole === 'OWNER'" class="btn-edit" (click)="openEditModal(room)">Sửa</button>
+                <button class="btn-info" (click)="openServiceModal(room.id)">Dịch vụ</button>
+                <button *ngIf="userRole === 'OWNER'" class="btn-delete" (click)="deleteRoom(room.id)">Xóa</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
     <div *ngIf="totalPages > 0"
       style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">

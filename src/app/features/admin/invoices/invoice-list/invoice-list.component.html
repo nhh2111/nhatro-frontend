@@ -13,7 +13,8 @@
         <div class="invoice-card" *ngFor="let inv of invoices" [ngClass]="inv.status">
             <div class="card-header">
                 <span class="room-no">Phòng {{ inv.Contract?.Room?.room_number }}</span>
-                <span class="status-badge">{{ inv.status === 'PAID' ? ' Đã thu đủ' : (inv.status === 'PARTIAL' ? ' Còn thiếu' : ' Chưa thu') }}</span>
+                <span class="status-badge">{{ inv.status === 'PAID' ? ' Đã thu đủ' : (inv.status === 'PARTIAL' ? ' Còn
+                    thiếu' : ' Chưa thu') }}</span>
             </div>
 
             <div class="card-content">
@@ -32,25 +33,27 @@
         </div>
     </div>
 
-    <div *ngIf="!isLoading && totalPages > 0" style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div *ngIf="!isLoading && totalPages > 0"
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         <div style="color: #7f8c8d; font-size: 14px;">
             Hiển thị <b>{{ invoices.length }}</b> / Tổng <b>{{ totalRecords }}</b> hóa đơn
         </div>
-        
+
         <div style="display: flex; gap: 8px; align-items: center;">
-            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" 
-                    style="padding: 8px 15px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; transition: 0.2s;"
-                    [style.opacity]="currentPage === 1 ? '0.5' : '1'"
-                    onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+                style="padding: 8px 15px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; transition: 0.2s;"
+                [style.opacity]="currentPage === 1 ? '0.5' : '1'" onmouseover="this.style.background='#f8f9fa'"
+                onmouseout="this.style.background='#fff'">
                 ❮ Trước
             </button>
 
-            <span style="font-weight: 600; padding: 0 15px; color: #2c3e50;">Trang {{ currentPage }} / {{ totalPages }}</span>
+            <span style="font-weight: 600; padding: 0 15px; color: #2c3e50;">Trang {{ currentPage }} / {{ totalPages
+                }}</span>
 
-            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" 
-                    style="padding: 8px 15px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; transition: 0.2s;"
-                    [style.opacity]="currentPage === totalPages ? '0.5' : '1'"
-                    onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
+                style="padding: 8px 15px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; transition: 0.2s;"
+                [style.opacity]="currentPage === totalPages ? '0.5' : '1'" onmouseover="this.style.background='#f8f9fa'"
+                onmouseout="this.style.background='#fff'">
                 Sau ❯
             </button>
         </div>
@@ -68,37 +71,39 @@
             </div>
 
             <div class="modal-body" style="padding: 20px;">
-                <div class="inv-info-header" style="margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">
+                <div class="inv-info-header"
+                    style="margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">
                     <p><strong>Kỳ hóa đơn:</strong> {{ selectedInvoice?.month_year }}</p>
                     <p><strong>Khách hàng:</strong> {{ selectedInvoice?.Contract?.Tenant?.full_name }}</p>
                 </div>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Nội dung</th>
-                            <th style="text-align: center;">SL</th>
-                            <th style="text-align: right;">Đơn giá</th>
-                            <th style="text-align: right;">Thành tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let item of selectedInvoice?.Items">
-                            <td>{{ item.description }}</td>
-                            <td style="text-align: center;">{{ item.quantity }}</td>
-                            <td style="text-align: right;">{{ item.unit_price | number }}</td>
-                            <td style="text-align: right;" class="fw-bold">{{ item.amount | number }}đ</td>
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="text-end fw-bold">TỔNG CỘNG:</td>
-                            <td class="text-danger fw-bold" style="font-size: 18px; text-align: right;">
-                                {{ selectedInvoice?.total_amount | number }}đ
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nội dung</th>
+                                <th style="text-align: center;">SL</th>
+                                <th style="text-align: right;">Đơn giá</th>
+                                <th style="text-align: right;">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of selectedInvoice?.Items">
+                                <td>{{ item.description }}</td>
+                                <td style="text-align: center;">{{ item.quantity }}</td>
+                                <td style="text-align: right;">{{ item.unit_price | number }}</td>
+                                <td style="text-align: right;" class="fw-bold">{{ item.amount | number }}đ</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold">TỔNG CỘNG:</td>
+                                <td class="text-danger fw-bold" style="font-size: 18px; text-align: right;">
+                                    {{ selectedInvoice?.total_amount | number }}đ
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" (click)="closeDetailModal()">Đóng</button>

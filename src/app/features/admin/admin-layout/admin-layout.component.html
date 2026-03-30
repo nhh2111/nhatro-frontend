@@ -1,22 +1,24 @@
-<div class="admin-wrapper">
+<div class="admin-wrapper" [class.sidebar-open]="isSidebarOpen">
+  <div class="sidebar-overlay" (click)="closeSidebar()"></div>
+
   <aside class="sidebar">
     <div class="logo">
       <h2>QL Nhà Trọ</h2>
     </div>
     <nav class="menu">
-      <a routerLink="/admin/houses" routerLinkActive="active" class="menu-item">Khu trọ / Tòa nhà</a>
-      <a routerLink="/admin/rooms" routerLinkActive="active" class="menu-item">Danh sách Phòng</a>
-      <a routerLink="/admin/services" routerLinkActive="active" class="menu-item">Dịch vụ</a>
+      <a routerLink="/admin/houses" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Khu trọ / Tòa nhà</a>
+      <a routerLink="/admin/rooms" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Danh sách Phòng</a>
+      <a routerLink="/admin/services" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Dịch vụ</a>
       
-      <a routerLink="/admin/tenants" routerLinkActive="active" class="menu-item">Khách thuê</a>
-      <a routerLink="/admin/contracts" routerLinkActive="active" class="menu-item">Hợp đồng</a>
-      <a routerLink="/admin/meter-readings" routerLinkActive="active" class="menu-item">Ghi Điện/Nước</a>
-      <a routerLink="/admin/invoices" routerLinkActive="active" class="menu-item">Hóa đơn & Thu tiền</a>
-      <a routerLink="/admin/tasks" routerLinkActive="active" class="menu-item">Yêu cầu & Sự cố</a>
+      <a routerLink="/admin/tenants" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Khách thuê</a>
+      <a routerLink="/admin/contracts" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Hợp đồng</a>
+      <a routerLink="/admin/meter-readings" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Ghi Điện/Nước</a>
+      <a routerLink="/admin/invoices" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Hóa đơn & Thu tiền</a>
+      <a routerLink="/admin/tasks" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Yêu cầu & Sự cố</a>
       
-      <a *ngIf="userRole === 'OWNER'" routerLink="/admin/users" routerLinkActive="active" class="menu-item">Nhân viên</a>
+      <a *ngIf="userRole === 'OWNER'" routerLink="/admin/users" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Nhân viên</a>
 
-      <a routerLink="/admin/profile" routerLinkActive="active" class="menu-item" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+      <a routerLink="/admin/profile" routerLinkActive="active" class="menu-item profile-link" (click)="closeSidebar()">
         Hồ sơ cá nhân
       </a>
     </nav>
@@ -25,21 +27,25 @@
   <main class="main-content">
     
     <header class="topbar">
-      <div class="user-info" routerLink="/admin/profile" style="cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 5px 10px; border-radius: 5px; transition: background 0.3s;" onmouseover="this.style.background='#f1f2f6'" onmouseout="this.style.background='transparent'">
-        
-        <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" 
-             style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #3498db;">
-        
-        <div *ngIf="!avatarUrl" 
-             style="width: 38px; height: 38px; border-radius: 50%; background: #3498db; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">
-          {{ fullName.charAt(0) | uppercase }}
+      <button class="menu-toggle" (click)="toggleSidebar()">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+
+      <div class="right-header">
+        <div class="user-info" routerLink="/admin/profile">
+          <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="avatar-img">
+          <div *ngIf="!avatarUrl" class="avatar-text">
+            {{ fullName.charAt(0) | uppercase }}
+          </div>
+          <span class="user-name">Xin chào, <strong>{{ fullName }}</strong></span>
         </div>
 
-        <span style="font-size: 15px; color: #2c3e50;">Xin chào, <strong>{{ fullName }}</strong></span>
+        <button class="btn-logout" (click)="logout()">Đăng xuất</button>
       </div>
-
-      <button class="btn-logout" (click)="logout()">Đăng xuất</button>
     </header>
+
     <div class="content-area">
       <router-outlet></router-outlet>
     </div>

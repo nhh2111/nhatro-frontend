@@ -3,53 +3,48 @@
     <h2>Thông tin cá nhân</h2>
   </div>
 
-  <div class="profile-container" style="max-width: 800px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-    
-    <div style="text-align: center; margin-bottom: 30px;">
-      <img [src]="profileForm.get('avatar')?.value || defaultAvatar" 
-           alt="Avatar" 
-           style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #3498db; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-      <h3 style="margin-top: 15px; color: #2c3e50;">{{ profileForm.get('full_name')?.value || 'Đang tải...' }}</h3>
-      <p style="color: #7f8c8d; margin-top: -10px;">Chức vụ: <strong style="color: #e67e22;">{{ profileForm.get('role')?.value === 'OWNER' ? 'Chủ trọ' : 'Nhân viên' }}</strong></p>
+  <div class="profile-card">
+    <div class="profile-avatar-section">
+      <img [src]="profileForm.get('avatar')?.value || defaultAvatar" alt="Avatar" class="avatar-img-large">
+      <h3>{{ profileForm.get('full_name')?.value || 'Đang tải...' }}</h3>
+      <p>Chức vụ: <strong>{{ profileForm.get('role')?.value === 'OWNER' ? 'Chủ trọ' : 'Nhân viên' }}</strong></p>
     </div>
 
     <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
-      <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        
-        <div class="form-group" style="grid-column: span 2;">
-          <label style="display: block; font-weight: 500; margin-bottom: 5px;">Họ và tên (*)</label>
-          <input type="text" formControlName="full_name" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Họ và tên (*)</label>
+          <input type="text" formControlName="full_name">
         </div>
 
         <div class="form-group">
-          <label style="display: block; font-weight: 500; margin-bottom: 5px;">Số điện thoại</label>
-          <input type="text" formControlName="phone" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <label>Số điện thoại</label>
+          <input type="text" formControlName="phone">
         </div>
 
         <div class="form-group">
-          <label style="display: block; font-weight: 500; margin-bottom: 5px;">Số CCCD / CMND</label>
-          <input type="text" formControlName="cccd" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <label>Số CCCD / CMND</label>
+          <input type="text" formControlName="cccd">
         </div>
 
-        <div class="form-group" style="grid-column: span 2;">
-          <label style="display: block; font-weight: 500; margin-bottom: 5px;">Link Ảnh Đại Diện (Tùy chọn)</label>
-          <input type="text" formControlName="avatar" placeholder="Dán link ảnh (Google Drive/Imgur...) vào đây" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-        </div>
-
-        <div class="form-group">
-          <label style="display: block; font-weight: 500; margin-bottom: 5px; color: #95a5a6;">Email đăng nhập</label>
-          <input type="email" formControlName="email" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9; cursor: not-allowed;">
+        <div class="form-group full-width">
+          <label>Link Ảnh Đại Diện (Tùy chọn)</label>
+          <input type="text" formControlName="avatar" placeholder="Dán link ảnh (Google Drive/Imgur...) vào đây">
         </div>
 
         <div class="form-group">
-          <label style="display: block; font-weight: 500; margin-bottom: 5px; color: #95a5a6;">Quyền hạn hệ thống</label>
-          <input type="text" formControlName="role" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9; cursor: not-allowed;">
+          <label>Email đăng nhập</label>
+          <input type="email" formControlName="email" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>Quyền hạn hệ thống</label>
+          <input type="text" formControlName="role" readonly>
         </div>
       </div>
 
-      <div class="form-actions" style="margin-top: 30px; text-align: center;">
-        <button type="submit" [disabled]="profileForm.invalid || isLoading" 
-                style="background: #27ae60; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.2);">
+      <div class="form-actions">
+        <button type="submit" class="btn-save" [disabled]="profileForm.invalid || isLoading">
           {{ isLoading ? 'Đang lưu...' : 'Cập nhật thông tin' }}
         </button>
       </div>
