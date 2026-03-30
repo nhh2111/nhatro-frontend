@@ -9,7 +9,7 @@ import { AuthService } from '../../../services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss'] // Bạn copy CSS từ login.component.scss sang nhé
+  styleUrls: [] 
 })
 export class RegisterComponent {
   private fb = inject(FormBuilder);

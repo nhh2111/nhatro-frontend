@@ -61,4 +61,12 @@ export class AuthService {
       return '';
     }
   }
+
+  requestPasswordReset(email: string): Observable<any> {
+    return this.http.post(`${this.authUrl}/request-password-reset`, { email });
+  }
+
+  confirmNewPassword(data: any): Observable<any> {
+    return this.http.post(`${this.authUrl}/confirm-password`, data);
+  }
 }
