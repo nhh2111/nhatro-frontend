@@ -21,8 +21,9 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Tên Khu Trọ</th>
+            <th style="text-align: center;">Tổng Phòng</th>
+            <th style="text-align: center;">Phòng Trống</th>
             <th>Địa chỉ chi tiết</th>
             <th>Phường/Xã</th>
             <th>Quận/Huyện</th>
@@ -32,13 +33,21 @@
         </thead>
         <tbody>
           <tr *ngFor="let house of houseList">
-            <td>#{{ house.id }}</td>
             <td class="fw-bold">{{ house.name }}</td>
+            <td style="text-align: center; font-weight: bold;">{{ house.total_rooms }}</td>
+            <td style="text-align: center;">
+              <span class="badge" [ngClass]="house.empty_rooms > 0 ? 'badge-success' : 'badge-danger'">
+                {{ house.empty_rooms > 0 ? 'Còn ' + house.empty_rooms + ' phòng' : 'Đã kín' }}
+              </span>
+            </td>
             <td>{{ house.address }}</td>
             <td>{{ house.ward }}</td>
             <td>{{ house.district }}</td>
             <td>{{ house.city }}</td>
             <td class="actions">
+              <button class="btn-info" [routerLink]="['/admin/rooms']" [queryParams]="{ house_id: house.id }">
+                Xem phòng
+              </button>
               <button *ngIf="userRole === 'OWNER'" class="btn-edit" (click)="openEditModal(house)">Sửa</button>
               <button *ngIf="userRole === 'OWNER'" class="btn-delete" (click)="deleteHouse(house.id)">Xóa</button>
             </td>

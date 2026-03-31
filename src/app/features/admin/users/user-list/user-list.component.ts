@@ -19,6 +19,7 @@ export class UserListComponent implements OnInit {
   userRole: string = '';
 
   userList: any[] = [];
+  isSaving: boolean = false;
   isLoading: boolean = false;
   errorMessage: string = '';
 
@@ -112,31 +113,52 @@ export class UserListComponent implements OnInit {
       return;
     }
 
-    // Lấy giá trị bao gồm cả trường bị disable (như email)
+    this.isSaving = true; 
     const rawValue = this.userForm.getRawValue();
 
     if (this.isEditMode && this.currentUserId) {
-      // Khi cập nhật, chỉ gửi full_name và status theo đúng API của bạn
-      const updateData = {
-        full_name: rawValue.full_name,
-        status: rawValue.status === 'true' || rawValue.status === true
-      };
-      
-      this.userService.updateStaff(this.currentUserId, updateData).subscribe({
-        next: () => { alert('Cập nhật thành công!'); this.closeModal(); this.loadUsers(); },
-        error: (err) => alert('Lỗi cập nhật: ' + (err.error?.error || err.message))
-      });
-    } else {
-      // Khi thêm mới, gửi email và full_name
-      const createData = {
-        email: rawValue.email,
-        full_name: rawValue.full_name
-      };
-
-      this.userService.createStaff(createData).subscribe({
-        next: (res) => { alert(res.message || 'Thêm mới thành công!'); this.closeModal(); this.loadUsers(); },
-        error: (err) => alert('Lỗi thêm mới: ' + (err.error?.error || err.message))
-      });
+      this.handleUpdateUser(rawValue);
+      return;
     }
+
+    this.handleCreateUser(rawValue);
+  }
+  private handleUpdateUser(rawValue: any): void {
+    const updateData = {
+      full_name: rawValue.full_name,
+      status: rawValue.status === 'true' || rawValue.status === true
+    };
+    
+    this.userService.updateStaff(this.currentUserId!, updateData).subscribe({
+      next: () => { 
+        this.isSaving = false; 
+        alert('Cập nhật thành công!'); 
+        this.closeModal(); 
+        this.loadUsers(); 
+      },
+      error: (err) => {
+        this.isSaving = false; 
+        alert('Lỗi cập nhật: ' + (err.error?.error || err.message));
+      }
+    });
+  }
+  private handleCreateUser(rawValue: any): void {
+    const createData = {
+      email: rawValue.email,
+      full_name: rawValue.full_name
+    };
+
+    this.userService.createStaff(createData).subscribe({
+      next: (res) => { 
+        this.isSaving = false; 
+        alert(res.message || 'Thêm mới thành công!'); 
+        this.closeModal(); 
+        this.loadUsers(); 
+      },
+      error: (err) => {
+        this.isSaving = false; 
+        alert('Lỗi thêm mới: ' + (err.error?.error || err.message));
+      }
+    });
   }
 }

@@ -113,7 +113,9 @@
 
       <div class="modal-footer">
         <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
-        <button type="submit" class="btn-save">{{ isEditMode ? 'Lưu Thay Đổi' : 'Tạo Tài Khoản' }}</button>
+        <button type="submit" class="btn-save" [disabled]="userForm.invalid || isSaving">
+          {{ isSaving ? 'Đang xử lý...' : (isEditMode ? 'Lưu Thay Đổi' : 'Tạo Tài Khoản') }}
+        </button>
       </div>
     </form>
   </div>
