@@ -12,9 +12,12 @@ export class RoomService {
   private apiUrl = `${environment.apiUrl}/general/rooms`; 
   private adminUrl = `${environment.apiUrl}/admin/rooms`; 
 
-  getAllRooms(page: number = 1, pageSize: number = 10, search: string = '') {
-    const url = `${environment.apiUrl}/general/rooms?page=${page}&pageSize=${pageSize}&search=${search}`;
-    return this.http.get<any>(url);
+  getAllRooms(page: number, pageSize: number, search: string, houseId: string = ''): Observable<any> {
+    let url = `${this.apiUrl}/?page=${page}&pageSize=${pageSize}&search=${search}`;
+    if (houseId) {
+      url += `&house_id=${houseId}`;
+    }
+    return this.http.get(url);
   }
 
   createRoom(roomData: Room): Observable<any> {

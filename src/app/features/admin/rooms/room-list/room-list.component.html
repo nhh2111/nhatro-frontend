@@ -189,7 +189,9 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
-        <button type="submit" class="btn-save">{{ isEditMode ? 'Cập nhật' : 'Lưu Phòng' }}</button>
+        <button type="submit" class="btn-save" [disabled]="roomForm.invalid || isSaving">
+          {{ isSaving ? 'Đang xử lý...' : (isEditMode ? 'Cập nhật' : 'Lưu Phòng') }}
+        </button>
       </div>
     </form>
   </div>
@@ -223,7 +225,9 @@
 
     <div class="modal-footer" style="padding: 15px 20px; border-top: 1px solid #eee;">
       <button class="btn-cancel" (click)="closeServiceModal()">Hủy</button>
-      <button class="btn-save" (click)="saveRoomServices()">Lưu Cài Đặt</button>
+      <button class="btn-save" (click)="saveRoomServices()" [disabled]="isSavingServices">
+        {{ isSavingServices ? 'Đang lưu...' : 'Lưu Cài Đặt' }}
+      </button>
     </div>
   </div>
 </div>

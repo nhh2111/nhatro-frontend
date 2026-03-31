@@ -118,7 +118,9 @@
 
       <div class="modal-footer">
         <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
-        <button type="submit" class="btn-save">{{ isEditMode ? 'Cập nhật' : 'Lưu Khu Trọ' }}</button>
+        <button type="submit" class="btn-save" [disabled]="houseForm.invalid || isSaving">
+          {{ isSaving ? 'Đang xử lý...' : (isEditMode ? 'Cập nhật' : 'Lưu Khu Trọ') }}
+        </button>
       </div>
     </form>
   </div>

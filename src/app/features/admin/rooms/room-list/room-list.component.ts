@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormsModule, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router'; // BỔ SUNG: Dùng để đọc tham số URL
 import { RoomService } from '../../../../services/room.service';
 import { HouseService } from '../../../../services/house.service';
 import { ServiceService } from '../../../../services/service.service';
@@ -10,7 +11,7 @@ import { AuthService } from '../../../../services/auth.service';
 @Component({
   selector: 'app-room-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule,FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './room-list.component.html',
   styleUrls: ['./room-list.component.scss']
 })
@@ -22,7 +23,9 @@ export class RoomListComponent implements OnInit {
   private srvService = inject(ServiceService);
   private contractService = inject(ContractService); 
   private authService = inject(AuthService);
+  private route = inject(ActivatedRoute); // BỔ SUNG: Inject router để đọc URL
 
+  houseIdFilter: string = '';
   userRole: string = '';
 
   currentPage: number = 1;
@@ -35,10 +38,12 @@ export class RoomListComponent implements OnInit {
   showServiceModal: boolean = false;
   selectedRoomIdForService?: number;
   selectedServiceIds: number[] = [];
+  isSavingServices: boolean = false; // Cờ khóa nút lưu dịch vụ
 
   houseList: any[] = [];
   roomList: any[] = []; 
   isLoading: boolean = false;
+  isSaving: boolean = false; // Cờ khóa nút lưu phòng
   errorMessage: string = '';
 
   showModal: boolean = false;
@@ -68,10 +73,19 @@ export class RoomListComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.loadRooms();
+      this.userRole = this.authService.getUserRole();
       this.loadHouses();
       this.loadAvailableServices();
-      this.userRole = this.authService.getUserRole();
+
+      this.route.queryParams.subscribe(params => {
+        if (params['house_id']) {
+          this.houseIdFilter = params['house_id']; 
+          this.searchQuery = ''; 
+        } else {
+          this.houseIdFilter = '';
+        }
+        this.loadRooms();
+      });
     }
   }
 
@@ -100,7 +114,7 @@ export class RoomListComponent implements OnInit {
   loadRooms(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    this.roomService.getAllRooms(this.currentPage, this.pageSize, this.searchQuery).subscribe({
+    this.roomService.getAllRooms(this.currentPage, this.pageSize, this.searchQuery, this.houseIdFilter).subscribe({
       next: (res) => { 
         if (res.errorCode === 200) {
           this.roomList = res.result.records; 
@@ -163,13 +177,27 @@ export class RoomListComponent implements OnInit {
     this.showModal = false;
   }
 
+  // TÁCH HÀM: Xử lý Submit chung
   saveRoom(): void {
     if (this.roomForm.invalid) {
       alert('Vui lòng điền đầy đủ và chính xác thông tin bắt buộc!');
       return;
     }
-    const rawValue = this.roomForm.value;
-    const roomData = {
+
+    this.isSaving = true;
+    const roomData = this.formatRoomData(this.roomForm.value);
+
+    if (this.isEditMode && this.currentRoomId) {
+      this.handleUpdateRoom(roomData);
+      return;
+    }
+
+    this.handleCreateRoom(roomData);
+  }
+
+  // TÁCH HÀM: Định dạng dữ liệu trước khi gửi
+  private formatRoomData(rawValue: any): any {
+    return {
       ...rawValue,
       house_id: Number(rawValue.house_id),
       floor: Number(rawValue.floor),
@@ -178,26 +206,38 @@ export class RoomListComponent implements OnInit {
       base_price: Number(rawValue.base_price),
       max_occupants: Number(rawValue.max_occupants)
     };
+  }
 
-    if (this.isEditMode && this.currentRoomId) {
-      this.roomService.updateRoom(this.currentRoomId, roomData).subscribe({
-        next: () => {
-          alert('Cập nhật phòng thành công!');
-          this.closeModal();
-          this.loadRooms();
-        },
-        error: (err) => alert('Lỗi cập nhật: ' + (err.error?.detail || err.error?.message || err.message))
-      });
-    } else {
-      this.roomService.createRoom(roomData).subscribe({
-        next: () => {
-          alert('Thêm phòng mới thành công!');
-          this.closeModal();
-          this.loadRooms();
-        },
-        error: (err) => alert('Lỗi thêm mới: ' + (err.error?.detail || err.error?.message || err.message))
-      });
-    }
+  // TÁCH HÀM: Chuyên xử lý Cập nhật
+  private handleUpdateRoom(roomData: any): void {
+    this.roomService.updateRoom(this.currentRoomId!, roomData).subscribe({
+      next: () => {
+        this.isSaving = false;
+        alert('Cập nhật phòng thành công!');
+        this.closeModal();
+        this.loadRooms();
+      },
+      error: (err) => {
+        this.isSaving = false;
+        alert('Lỗi cập nhật: ' + (err.error?.detail || err.error?.message || err.message));
+      }
+    });
+  }
+
+  // TÁCH HÀM: Chuyên xử lý Thêm mới
+  private handleCreateRoom(roomData: any): void {
+    this.roomService.createRoom(roomData).subscribe({
+      next: () => {
+        this.isSaving = false;
+        alert('Thêm phòng mới thành công!');
+        this.closeModal();
+        this.loadRooms();
+      },
+      error: (err) => {
+        this.isSaving = false;
+        alert('Lỗi thêm mới: ' + (err.error?.detail || err.error?.message || err.message));
+      }
+    });
   }
 
   openServiceModal(roomId: number | undefined): void {
@@ -231,12 +271,18 @@ export class RoomListComponent implements OnInit {
 
   saveRoomServices(): void {
     if (!this.selectedRoomIdForService) return;
+    
+    this.isSavingServices = true;
     this.roomService.assignServicesToRoom(this.selectedRoomIdForService, this.selectedServiceIds).subscribe({
       next: () => {
+        this.isSavingServices = false;
         alert('Cập nhật dịch vụ cho phòng thành công!');
         this.closeServiceModal();
       },
-      error: (err) => alert('Lỗi cập nhật dịch vụ: ' + (err.error?.error || err.message))
+      error: (err) => {
+        this.isSavingServices = false;
+        alert('Lỗi cập nhật dịch vụ: ' + (err.error?.error || err.message));
+      }
     });
   }
 }
