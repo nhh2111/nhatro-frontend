@@ -23,8 +23,10 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Họ Tên</th>
+            <th style="width: 60px; text-align: center;">Ảnh</th> <th>Họ Tên</th>
             <th>Email</th>
+            <th>SĐT</th>
+            <th>CCCD</th>
             <th>Vai Trò</th>
             <th>Trạng Thái</th>
             <th>Hành Động</th>
@@ -33,8 +35,16 @@
         <tbody>
           <tr *ngFor="let user of userList">
             <td>#{{ user.id }}</td>
+            
+            <td style="text-align: center; vertical-align: middle;">
+              <img [src]="getAvatarUrl(user)" alt="Avatar" 
+                   style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; display: block; margin: 0 auto;">
+            </td>
+
             <td class="fw-bold">{{ user.full_name }}</td>
             <td>{{ user.email }}</td>
+            <td>{{ user.phone }}</td>
+            <td>{{ user.cccd }}</td>
             <td><span class="badge badge-info">{{ user.role }}</span></td>
             <td>
               <span class="badge" [ngClass]="user.status ? 'badge-success' : 'badge-danger'">

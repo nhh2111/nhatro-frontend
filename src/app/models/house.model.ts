@@ -6,4 +6,5 @@ export interface House {
   district: string;
   ward: string;
   address: string;
+  images: string;
 }

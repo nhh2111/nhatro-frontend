@@ -7,3 +7,13 @@
   &.UNPAID { border-left-color: #e74c3c; } 
   &.PARTIAL { border-left-color: #f1c40f; } 
 }
+.card-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;        
+}
+
+.card-actions button {
+  cursor: pointer;
+  margin: 10px 10px;        
+}

@@ -7,6 +7,7 @@ import { HouseService } from '../../../../services/house.service';
 import { ServiceService } from '../../../../services/service.service';
 import { ContractService } from '../../../../services/contract.service'; 
 import { AuthService } from '../../../../services/auth.service';
+import { UploadService } from '../../../../services/upload.service';
 
 @Component({
   selector: 'app-room-list',
@@ -23,7 +24,8 @@ export class RoomListComponent implements OnInit {
   private srvService = inject(ServiceService);
   private contractService = inject(ContractService); 
   private authService = inject(AuthService);
-  private route = inject(ActivatedRoute); // BỔ SUNG: Inject router để đọc URL
+  private route = inject(ActivatedRoute); 
+  public uploadService = inject(UploadService);
 
   houseIdFilter: string = '';
   userRole: string = '';
@@ -38,17 +40,20 @@ export class RoomListComponent implements OnInit {
   showServiceModal: boolean = false;
   selectedRoomIdForService?: number;
   selectedServiceIds: number[] = [];
-  isSavingServices: boolean = false; // Cờ khóa nút lưu dịch vụ
+  isSavingServices: boolean = false; 
 
   houseList: any[] = [];
   roomList: any[] = []; 
   isLoading: boolean = false;
-  isSaving: boolean = false; // Cờ khóa nút lưu phòng
+  isSaving: boolean = false; 
   errorMessage: string = '';
 
   showModal: boolean = false;
   isEditMode: boolean = false;
   currentRoomId?: number;
+
+  previewImages: string[] = [];
+  isUploading: boolean = false;
 
   roomForm: FormGroup = this.fb.group({
     house_id: ['', Validators.required],
@@ -66,7 +71,6 @@ export class RoomListComponent implements OnInit {
 
   getHouseName(houseId: number): string {
     if (!this.houseList || this.houseList.length === 0) return 'Đang tải...';
-    
     const foundHouse = this.houseList.find((h: any) => h.id === houseId);
     return foundHouse ? foundHouse.name : 'Chưa xác định';
   }
@@ -159,9 +163,10 @@ export class RoomListComponent implements OnInit {
   openAddModal(): void {
     this.isEditMode = false;
     this.currentRoomId = undefined;
+    this.previewImages = [];
     this.roomForm.reset({
       house_id: '', floor: 1, width: 0, length: 0, base_price: 0,
-      max_occupants: 1, gender_restriction: 'ALL', status: 'AVAILABLE'
+      max_occupants: 1, gender_restriction: 'ALL', status: 'AVAILABLE', images: ''
     });
     this.showModal = true;
   }
@@ -170,11 +175,48 @@ export class RoomListComponent implements OnInit {
     this.isEditMode = true;
     this.currentRoomId = room.id;
     this.roomForm.patchValue(room);
+  
+    if (room.images) {
+      this.previewImages = room.images.split(',');
+    } else {
+      this.previewImages = [];
+    }
+    
     this.showModal = true;
   }
 
   closeModal(): void {
     this.showModal = false;
+  }
+
+  onImagesSelected(event: any): void {
+    const files: FileList = event.target.files;
+    if (files.length === 0) return;
+    const fileArray = Array.from(files);
+
+    this.isUploading = true;
+    this.uploadService.uploadMultipleImages(fileArray, 'rooms').subscribe({
+      next: (res) => {
+        if (res.result && res.result.urls) {
+          this.previewImages = [...this.previewImages, ...res.result.urls];
+          this.roomForm.patchValue({ images: this.previewImages.join(',') });
+        }
+        this.isUploading = false;
+      },
+      error: (err) => {
+        alert('Lỗi tải ảnh: ' + (err.error?.errorMessage || err.message));
+        this.isUploading = false;
+      }
+    });
+  }
+
+  removeImage(index: number, imgUrl: string): void {
+    if (imgUrl.startsWith('/uploads')) {
+        this.uploadService.deleteImage('rooms', imgUrl).subscribe();
+    }
+
+    this.previewImages.splice(index, 1);
+    this.roomForm.patchValue({ images: this.previewImages.join(',') });
   }
 
   // TÁCH HÀM: Xử lý Submit chung
@@ -284,5 +326,50 @@ export class RoomListComponent implements OnInit {
         alert('Lỗi cập nhật dịch vụ: ' + (err.error?.error || err.message));
       }
     });
+  }
+
+  getFirstImage(imageString: string): string {
+    if (!imageString) return '';
+    const firstImg = imageString.split(',')[0]; 
+    return this.uploadService.formatImageUrl(firstImg); 
+  }
+
+  getImageCount(imageString: string): number {
+    if (!imageString) return 0;
+    return imageString.split(',').length;
+  }
+
+  // KHU VỰC QUẢN LÝ GALLERY (XEM ẢNH PHÓNG TO)
+  showGalleryModal: boolean = false;
+  galleryImages: string[] = [];
+  currentGalleryIndex: number = 0;
+
+  openGallery(imageString: string): void {
+    if (!imageString) return;
+    
+    this.galleryImages = imageString.split(',').map(img => this.uploadService.formatImageUrl(img));
+    this.currentGalleryIndex = 0;
+    this.showGalleryModal = true;
+  }
+
+  closeGallery(): void {
+    this.showGalleryModal = false;
+    this.galleryImages = [];
+  }
+
+  nextImage(): void {
+    if (this.currentGalleryIndex < this.galleryImages.length - 1) {
+      this.currentGalleryIndex++;
+    } else {
+      this.currentGalleryIndex = 0; 
+    }
+  }
+
+  prevImage(): void {
+    if (this.currentGalleryIndex > 0) {
+      this.currentGalleryIndex--;
+    } else {
+      this.currentGalleryIndex = this.galleryImages.length - 1;
+    }
   }
 }

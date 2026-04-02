@@ -5,4 +5,5 @@ export interface Service {
     unit_price: number;
     Unit: string;
     description: string;
+    owner_id: number;
 }

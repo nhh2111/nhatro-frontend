@@ -38,3 +38,73 @@
 
   &:disabled { background: #95a5a6; box-shadow: none; cursor: not-allowed; transform: none; }
 }
+
+/* --- CHỈNH SỬA AVATAR UPLOAD --- */
+.avatar-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.upload-btn-wrapper {
+  position: absolute;
+  bottom: 5px;
+  right: -10px;
+  overflow: hidden;
+  display: inline-block;
+
+  .btn-upload {
+    border: 2px solid white;
+    color: white;
+    background-color: var(--primary);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: 0.2s;
+  }
+
+  /* Làm trong suốt thẻ input file để nó trùm lên nút bấm */
+  input[type=file] {
+    font-size: 100px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    cursor: pointer;
+    height: 100%;
+  }
+
+  &:hover .btn-upload {
+    background-color: var(--info);
+  }
+}
+
+/* --- STYLE CHO NÚT ĐỔI MẬT KHẨU --- */
+.btn-warning {
+  background: var(--warning); 
+  color: white; 
+  border: none; 
+  padding: 12px 30px;
+  font-size: 16px; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  font-weight: bold;
+  box-shadow: 0 4px 6px rgba(243, 156, 18, 0.2); 
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    background: #e67e22; 
+    transform: translateY(-1px); 
+    box-shadow: 0 6px 8px rgba(243, 156, 18, 0.3);
+  }
+
+  &:disabled { 
+    background: #f5cba7; 
+    box-shadow: none; 
+    cursor: not-allowed; 
+    transform: none; 
+  }
+}

@@ -52,8 +52,10 @@
               <td>{{ room.current_occupants || 0 }} / {{ room.max_occupants }}</td>
 
               <td>
-                <a *ngIf="room.images" [href]="room.images" target="_blank"
-                  style="color: #3498db; text-decoration: none; font-weight: 500;">Xem ảnh</a>
+                <button *ngIf="room.images" class="btn-info" (click)="openGallery(room.images)"
+                  style="cursor: pointer; padding: 4px 10px; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; border-radius: 20px;">
+                  Xem ảnh ({{ getImageCount(room.images) }})
+                </button>
                 <span *ngIf="!room.images" style="color: #95a5a6;">---</span>
               </td>
 
@@ -184,8 +186,23 @@
       </div>
 
       <div class="form-group full-width">
-        <label>Link ảnh hiện trạng phòng (Tùy chọn)</label>
-        <input type="text" formControlName="images" placeholder="Dán link thư mục ảnh Google Drive/Imgur vào đây">
+        <label>Hình ảnh phòng</label>
+        
+        <div style="margin-bottom: 10px;">
+          <input type="file" (change)="onImagesSelected($event)" accept="image/*" multiple id="roomImagesUpload" style="display: none;">
+          <button type="button" class="btn-info" onclick="document.getElementById('roomImagesUpload').click()" [disabled]="isUploading">
+            {{ isUploading ? 'Đang tải lên...' : 'Thêm hình ảnh' }}
+          </button>
+        </div>
+
+        <div *ngIf="previewImages.length > 0" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+          <div *ngFor="let img of previewImages; let i = index" style="position: relative; width: 100px; height: 100px;">
+            <img [src]="uploadService.formatImageUrl(img)" style="width: 100%; height: 100%; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
+            <button type="button" (click)="removeImage(i, img)" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 10px;">
+              X
+            </button>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
@@ -228,6 +245,39 @@
       <button class="btn-save" (click)="saveRoomServices()" [disabled]="isSavingServices">
         {{ isSavingServices ? 'Đang lưu...' : 'Lưu Cài Đặt' }}
       </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showGalleryModal" style="z-index: 9999; background: rgba(0,0,0,0.85);">
+  <div style="position: relative; max-width: 800px; width: 90%; display: flex; flex-direction: column; align-items: center;">
+
+    <button (click)="closeGallery()"
+      style="position: absolute; top: -40px; right: -10px; background: none; border: none; color: white; font-size: 35px; cursor: pointer; padding: 10px;">
+      &times;
+    </button>
+
+    <div style="width: 100%; height: 60vh; display: flex; justify-content: center; align-items: center; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <img [src]="galleryImages[currentGalleryIndex]" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+    </div>
+
+    <div *ngIf="galleryImages.length > 1"
+      style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 20px; color: white; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 30px;">
+      
+      <button (click)="prevImage()"
+        style="background: none; border: none; color: white; cursor: pointer; font-size: 16px; font-weight: bold; padding: 5px 10px; transition: 0.2s;">
+        ❮ Trước
+      </button>
+
+      <span style="font-size: 14px; font-weight: 500; letter-spacing: 1px;">
+        {{ currentGalleryIndex + 1 }} / {{ galleryImages.length }}
+      </span>
+
+      <button (click)="nextImage()"
+        style="background: none; border: none; color: white; cursor: pointer; font-size: 16px; font-weight: bold; padding: 5px 10px; transition: 0.2s;">
+        Sau ❯
+      </button>
+
     </div>
   </div>
 </div>

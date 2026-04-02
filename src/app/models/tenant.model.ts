@@ -11,4 +11,5 @@ export interface Tenant {
     license_plates: string;
     image_url: string;
     created_at?: string;
+    owner_id: number;
 }

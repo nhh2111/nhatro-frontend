@@ -8,4 +8,5 @@ export interface User {
   status: boolean;
   is_first_login: boolean;
   created_at?: string;
+  employer_id: number;
 }

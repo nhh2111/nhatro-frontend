@@ -17,7 +17,6 @@ export class InvoiceListComponent implements OnInit {
   selectedMonth: string = new Date().toISOString().substring(0, 7); 
   isLoading: boolean = false;
 
-  // BIẾN PHÂN TRANG
   currentPage: number = 1;
   pageSize: number = 10;
   totalRecords: number = 0;
@@ -30,20 +29,17 @@ export class InvoiceListComponent implements OnInit {
     this.loadInvoices();
   }
 
-  // GỌI HÀM NÀY KHI CHỦ TRỌ CHỌN THÁNG KHÁC TRÊN GIAO DIỆN
   onMonthChange(): void {
     this.currentPage = 1;
     this.loadInvoices();
   }
 
-  // CHUẨN HÓA LẠI HÀM LOAD THEO PHÂN TRANG
   loadInvoices(): void {
     this.isLoading = true;
-    // Truyền thêm currentPage và pageSize vào service
     this.invoiceService.getAllInvoices(this.currentPage, this.pageSize, this.selectedMonth).subscribe({
       next: (res) => { 
         if (res.errorCode === 200) {
-          this.invoices = res.result.records; // Đổi res.data thành res.result.records
+          this.invoices = res.result.records; 
           this.totalRecords = res.result.recordCount;
           this.totalPages = res.result.pageCount;
           this.currentPage = res.result.currentPage;
@@ -54,7 +50,6 @@ export class InvoiceListComponent implements OnInit {
     });
   }
 
-  // HÀM CHUYỂN TRANG
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
@@ -99,6 +94,23 @@ export class InvoiceListComponent implements OnInit {
           this.loadInvoices();
         },
         error: (err) => alert(err.error?.error || 'Lỗi thu tiền')
+      });
+    }
+  }
+
+  // --- HÀM XÓA HÓA ĐƠN ---
+  deleteInvoice(invoice: any): void {
+    if (confirm(`Bạn có chắc chắn muốn xóa hóa đơn của Phòng ${invoice.Contract?.Room?.room_number} không? Thao tác này không thể hoàn tác.`)) {
+      this.isLoading = true;
+      this.invoiceService.deleteInvoice(invoice.id).subscribe({
+        next: (res) => {
+          alert(res.message || 'Đã xóa hóa đơn thành công!');
+          this.loadInvoices(); // Tải lại danh sách sau khi xóa
+        },
+        error: (err) => {
+          alert(err.error?.error || 'Lỗi khi xóa hóa đơn');
+          this.isLoading = false;
+        }
       });
     }
   }

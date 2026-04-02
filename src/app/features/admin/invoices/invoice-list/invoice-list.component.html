@@ -13,8 +13,7 @@
         <div class="invoice-card" *ngFor="let inv of invoices" [ngClass]="inv.status">
             <div class="card-header">
                 <span class="room-no">Phòng {{ inv.Contract?.Room?.room_number }}</span>
-                <span class="status-badge">{{ inv.status === 'PAID' ? ' Đã thu đủ' : (inv.status === 'PARTIAL' ? ' Còn
-                    thiếu' : ' Chưa thu') }}</span>
+                <span class="status-badge">{{ inv.status === 'PAID' ? ' Đã thu đủ' : (inv.status === 'PARTIAL' ? ' Còn thiếu' : ' Chưa thu') }}</span>
             </div>
 
             <div class="card-content">
@@ -29,6 +28,7 @@
             <div class="card-actions">
                 <button class="btn-pay" *ngIf="inv.status !== 'PAID'" (click)="handlePay(inv)">Thu tiền</button>
                 <button class="btn-info" (click)="viewDetail(inv)">Chi tiết</button>
+                <button class="btn-danger" style="background-color: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;" *ngIf="inv.status === 'UNPAID'" (click)="deleteInvoice(inv)">Xóa</button>
             </div>
         </div>
     </div>
@@ -47,8 +47,7 @@
                 ❮ Trước
             </button>
 
-            <span style="font-weight: 600; padding: 0 15px; color: #2c3e50;">Trang {{ currentPage }} / {{ totalPages
-                }}</span>
+            <span style="font-weight: 600; padding: 0 15px; color: #2c3e50;">Trang {{ currentPage }} / {{ totalPages }}</span>
 
             <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
                 style="padding: 8px 15px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; transition: 0.2s;"
@@ -104,9 +103,6 @@
                         </tfoot>
                     </table>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" (click)="closeDetailModal()">Đóng</button>
             </div>
         </div>
     </div>

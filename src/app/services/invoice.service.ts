@@ -9,7 +9,7 @@ export class InvoiceService {
   private apiUrl = `${environment.apiUrl}/general/invoices`;
 
   getAllInvoices(page: number = 1, pageSize: number = 10, monthYear: string = '') {
-    const url = `${environment.apiUrl}/general/invoices?page=${page}&pageSize=${pageSize}&month_year=${monthYear}`;
+    const url = `${this.apiUrl}?page=${page}&pageSize=${pageSize}&month_year=${monthYear}`;
     return this.http.get<any>(url);
   }
 
@@ -19,5 +19,10 @@ export class InvoiceService {
 
   payInvoice(invoiceId: number, amount: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/pay`, { invoice_id: invoiceId, amount: amount });
+  }
+
+  // --- HÀM XÓA HÓA ĐƠN VỪA THÊM ---
+  deleteInvoice(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 }

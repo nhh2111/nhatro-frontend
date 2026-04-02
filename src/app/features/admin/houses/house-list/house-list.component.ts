@@ -1,15 +1,15 @@
 import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HouseService } from '../../../../services/house.service';
-import { isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { HouseService } from '../../../../services/house.service';
 import { AuthService } from '../../../../services/auth.service';
+import { UploadService } from '../../../../services/upload.service'; // BỔ SUNG
 
 @Component({
   selector: 'app-house-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule,RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
   templateUrl: './house-list.component.html',
   styleUrls: ['./house-list.component.scss']
 })
@@ -18,10 +18,11 @@ export class HouseListComponent implements OnInit {
   private fb = inject(FormBuilder);
   private platformId = inject(PLATFORM_ID);
   private authService = inject(AuthService);
+  public uploadService = inject(UploadService); // BỔ SUNG
   
   houseList: any[] = [];
   isLoading: boolean = false;
-  isSaving: boolean = false; // BỔ SUNG: Cờ khóa nút bấm
+  isSaving: boolean = false;
   errorMessage: string = '';
   userRole: string = '';
 
@@ -35,12 +36,17 @@ export class HouseListComponent implements OnInit {
   isEditMode: boolean = false;
   currentHouseId?: number;
 
+  // BỔ SUNG: Biến chứa mảng link ảnh xem trước khi thêm/sửa
+  previewImages: string[] = [];
+  isUploading: boolean = false;
+
   houseForm: FormGroup = this.fb.group({
     name: ['', Validators.required],
     city: ['', Validators.required],
     district: ['', Validators.required],
     ward: ['', Validators.required],
-    address: ['', Validators.required]
+    address: ['', Validators.required],
+    images: [''] // BỔ SUNG
   });
 
   ngOnInit(): void {
@@ -94,7 +100,10 @@ export class HouseListComponent implements OnInit {
   openAddModal(): void {
     this.isEditMode = false;
     this.currentHouseId = undefined;
-    this.houseForm.reset();
+    this.previewImages = []; // BỔ SUNG
+    this.houseForm.reset({
+        name: '', city: '', district: '', ward: '', address: '', images: ''
+    });
     this.showModal = true;
   }
 
@@ -102,6 +111,14 @@ export class HouseListComponent implements OnInit {
     this.isEditMode = true;
     this.currentHouseId = house.id;
     this.houseForm.patchValue(house);
+
+    // BỔ SUNG: Hiển thị ảnh cũ nếu có
+    if (house.images) {
+        this.previewImages = house.images.split(',');
+    } else {
+        this.previewImages = [];
+    }
+
     this.showModal = true;
   }
 
@@ -109,13 +126,90 @@ export class HouseListComponent implements OnInit {
     this.showModal = false;
   }
 
+  // ==========================================
+  // KHU VỰC XỬ LÝ UPLOAD ẢNH
+  // ==========================================
+  onImagesSelected(event: any): void {
+    const files: FileList = event.target.files;
+    if (files.length === 0) return;
+
+    const fileArray = Array.from(files);
+    this.isUploading = true;
+
+    // Phân loại vào thư mục 'houses'
+    this.uploadService.uploadMultipleImages(fileArray, 'houses').subscribe({
+      next: (res) => {
+        if (res.result && res.result.urls) {
+          this.previewImages = [...this.previewImages, ...res.result.urls];
+          this.houseForm.patchValue({ images: this.previewImages.join(',') });
+        }
+        this.isUploading = false;
+      },
+      error: (err) => {
+        alert('Lỗi tải ảnh: ' + (err.error?.errorMessage || err.message));
+        this.isUploading = false;
+      }
+    });
+  }
+
+  removeImage(index: number, imgUrl: string): void {
+    if (imgUrl.startsWith('/uploads')) {
+        this.uploadService.deleteImage('houses', imgUrl).subscribe();
+    }
+    this.previewImages.splice(index, 1);
+    this.houseForm.patchValue({ images: this.previewImages.join(',') });
+  }
+
+  // ==========================================
+  // KHU VỰC QUẢN LÝ GALLERY (XEM ẢNH PHÓNG TO)
+  // ==========================================
+  showGalleryModal: boolean = false;
+  galleryImages: string[] = [];
+  currentGalleryIndex: number = 0;
+
+  getImageCount(imageString: string): number {
+    if (!imageString) return 0;
+    return imageString.split(',').length;
+  }
+
+  openGallery(imageString: string): void {
+    if (!imageString) return;
+    this.galleryImages = imageString.split(',').map(img => this.uploadService.formatImageUrl(img));
+    this.currentGalleryIndex = 0;
+    this.showGalleryModal = true;
+  }
+
+  closeGallery(): void {
+    this.showGalleryModal = false;
+    this.galleryImages = [];
+  }
+
+  nextImage(): void {
+    if (this.currentGalleryIndex < this.galleryImages.length - 1) {
+      this.currentGalleryIndex++;
+    } else {
+      this.currentGalleryIndex = 0;
+    }
+  }
+
+  prevImage(): void {
+    if (this.currentGalleryIndex > 0) {
+      this.currentGalleryIndex--;
+    } else {
+      this.currentGalleryIndex = this.galleryImages.length - 1;
+    }
+  }
+
+  // ==========================================
+  // KHU VỰC LƯU DỮ LIỆU
+  // ==========================================
   saveHouse(): void {
     if (this.houseForm.invalid) {
       alert('Vui lòng điền đủ thông tin!');
       return;
     }
 
-    this.isSaving = true; // Bắt đầu xử lý, khóa nút
+    this.isSaving = true; 
     const houseData = this.houseForm.value;
 
     if (this.isEditMode && this.currentHouseId) {

@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../../../services/user.service';
 import { AuthService } from '../../../../services/auth.service';
+import { UploadService } from '../../../../services/upload.service'; // BỔ SUNG
 
 @Component({
   selector: 'app-user-list',
@@ -16,8 +17,9 @@ export class UserListComponent implements OnInit {
   private fb = inject(FormBuilder);
   private platformId = inject(PLATFORM_ID);
   private authService = inject(AuthService);
-  userRole: string = '';
+  public uploadService = inject(UploadService); // BỔ SUNG
 
+  userRole: string = '';
   userList: any[] = [];
   isSaving: boolean = false;
   isLoading: boolean = false;
@@ -44,6 +46,14 @@ export class UserListComponent implements OnInit {
       this.loadUsers();
       this.userRole = this.authService.getUserRole();
     }
+  }
+
+  // TÁCH HÀM: Xử lý hiển thị Avatar nhân viên
+  getAvatarUrl(user: any): string {
+    if (!user.avatar) {
+      return `https://ui-avatars.com/api/?name=${user.full_name}&background=random`;
+    }
+    return this.uploadService.formatImageUrl(user.avatar);
   }
 
   loadUsers(): void {
@@ -123,6 +133,7 @@ export class UserListComponent implements OnInit {
 
     this.handleCreateUser(rawValue);
   }
+
   private handleUpdateUser(rawValue: any): void {
     const updateData = {
       full_name: rawValue.full_name,
@@ -142,6 +153,7 @@ export class UserListComponent implements OnInit {
       }
     });
   }
+
   private handleCreateUser(rawValue: any): void {
     const createData = {
       email: rawValue.email,

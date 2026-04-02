@@ -7,4 +7,5 @@ export interface Task {
     status: string;
     created_at?: string;
     finished_at?: string;
+    owner_id: number;
 }

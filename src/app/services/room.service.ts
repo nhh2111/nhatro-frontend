@@ -13,7 +13,7 @@ export class RoomService {
   private adminUrl = `${environment.apiUrl}/admin/rooms`; 
 
   getAllRooms(page: number, pageSize: number, search: string, houseId: string = ''): Observable<any> {
-    let url = `${this.apiUrl}/?page=${page}&pageSize=${pageSize}&search=${search}`;
+    let url = `${this.apiUrl}?page=${page}&pageSize=${pageSize}&search=${search}`;
     if (houseId) {
       url += `&house_id=${houseId}`;
     }
