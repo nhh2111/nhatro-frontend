@@ -15,18 +15,14 @@ export class TaskService {
     return this.http.get<any>(url);
   }
 
-  // 2. Tạo mới sự cố
   createTask(taskData: any): Observable<any> {
     return this.http.post(this.apiUrl, taskData);
   }
 
-  // 3. Cập nhật trạng thái hoặc nội dung
-  // Backend Go sẽ xử lý logic finished_at dựa trên status gửi lên
   updateTask(id: number, updatedData: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, updatedData);
   }
 
-  // 4. Xóa sự cố
   deleteTask(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }

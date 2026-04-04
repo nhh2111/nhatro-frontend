@@ -29,6 +29,7 @@
             <th>Ngày Bắt Đầu</th>
             <th>Ngày Kết Thúc</th>
             <th>Tiền Cọc</th>
+            <th>Điều Khoản</th>
             <th>Trạng Thái</th>
             <th>Hành Động</th>
           </tr>
@@ -41,6 +42,17 @@
             <td>{{ c.start_date | date:'dd/MM/yyyy' }}</td>
             <td>{{ c.end_date | date:'dd/MM/yyyy' }}</td>
             <td class="price">{{ c.deposit_amount | number:'1.0-0' }} đ</td>
+            <!-- CỘT ĐIỀU KHOẢN CÓ NÚT XEM THÊM -->
+            <td style="max-width: 250px;">
+              <div [ngClass]="{'expanded-text': c.isExpanded, 'truncated-text': !c.isExpanded}">
+                {{ c.terms || 'Không có' }}
+              </div>
+              <!-- Chỉ hiện nút Xem thêm nếu có chữ và chữ đủ dài -->
+              <a href="javascript:void(0)" *ngIf="c.terms && c.terms.length > 50" (click)="c.isExpanded = !c.isExpanded"
+                style="color: #2980b9; font-size: 12px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 5px;">
+                {{ c.isExpanded ? 'Thu gọn v' : 'Xem thêm...' }}
+              </a>
+            </td>
             <td>
               <span class="badge" [ngClass]="c.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'">
                 {{ c.status === 'ACTIVE' ? 'Đang hiệu lực' : 'Đã thanh lý' }}
@@ -128,6 +140,11 @@
         <div class="form-group">
           <label>Tiền đặt cọc (VNĐ)</label>
           <input type="number" formControlName="deposit_amount">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Điều khoản thỏa thuận</label>
+          <textarea formControlName="terms" rows="3" placeholder="Nhập các điều khoản riêng (nếu có)..."></textarea>
         </div>
 
       </div>

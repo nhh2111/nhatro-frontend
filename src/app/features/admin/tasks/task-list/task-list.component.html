@@ -27,6 +27,8 @@
             <th>Vị trí (Nhà/Phòng)</th>
             <th>Tiêu đề & Nội dung</th>
             <th>Trạng thái</th>
+            <th>Người xử lý</th>
+            <th>Chi phí</th>
             <th>Xử lý ngày</th>
             <th>Thao tác</th>
           </tr>
@@ -43,7 +45,10 @@
             </td>
             <td>
               <strong>{{ task.title }}</strong>
-              <p style="font-size: 13px; color: #666; margin: 3px 0 0 0;">{{ task.content || '---' }}</p>
+              <!-- ĐÃ THÊM CSS CẮT DÒNG VÀ HOVER TITLE VÀO ĐÂY -->
+              <p [title]="task.content" style="font-size: 13px; color: #666; margin: 3px 0 0 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 250px; cursor: help;">
+                {{ task.content || '---' }}
+              </p>
             </td>
             <td>
               <select [ngModel]="task.status" (ngModelChange)="changeStatus(task.id, $event)"
@@ -53,6 +58,10 @@
                 <option value="DONE">Hoàn thành (DONE)</option>
                 <option value="CANCELLED">Hủy bỏ (CANCELLED)</option>
               </select>
+            </td>
+            <td>{{ task.assignee || '---' }}</td>
+            <td style="color: #e74c3c; font-weight: bold;">
+              {{ task.cost ? (task.cost | number:'1.0-0' + ' đ') : '---' }}
             </td>
             <td>{{ (task.finished_at | date:'dd/MM/yyyy') || '---' }}</td>
             <td class="actions">
@@ -130,6 +139,19 @@
         <div class="form-group full-width">
           <label>Mô tả chi tiết nội dung (content)</label>
           <textarea formControlName="content" rows="4" placeholder="Nhập mô tả chi tiết sự cố tại đây..."></textarea>
+        </div>
+
+        <div class="form-group" *ngIf="isEditMode">
+          <label>Người thực hiện (Assignee)</label>
+          <input type="text" formControlName="assignee" placeholder="Tên nhân viên sửa chữa">
+        </div>
+
+        <div class="form-group" *ngIf="isEditMode">
+          <label>Chi phí sửa chữa (VNĐ)</label>
+          <input type="number" formControlName="cost" placeholder="Nhập tổng chi phí...">
+          <small style="color: #27ae60; font-size: 12px; margin-top: 4px; display: block;" *ngIf="taskForm.get('status')?.value === 'DONE' && taskForm.get('cost')?.value > 0">
+            *Phiếu chi sẽ tự động được tạo khi lưu trạng thái Hoàn thành!
+          </small>
         </div>
 
         <div class="form-group full-width" *ngIf="isEditMode">

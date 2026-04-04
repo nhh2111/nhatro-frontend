@@ -11,3 +11,17 @@
     }
   }
 }
+/* CSS cho trạng thái thu gọn (Cắt 2 dòng) */
+.truncated-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-line; /* Giữ nguyên các dấu xuống dòng nếu có */
+}
+
+/* CSS cho trạng thái mở rộng (Hiện toàn bộ) */
+.expanded-text {
+  display: block;
+  white-space: pre-line;
+}

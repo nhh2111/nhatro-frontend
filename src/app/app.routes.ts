@@ -71,6 +71,11 @@ export const routes: Routes = [
         path: 'invoices',
         loadComponent: () => import('./features/admin/invoices/invoice-list/invoice-list.component').then(m => m.InvoiceListComponent)
       },
+      // THÊM ROUTE SỔ QUỸ (THU/CHI) VÀO ĐÂY
+      {
+        path: 'transactions',
+        loadComponent: () => import('./features/admin/transactions/transaction-list/transaction-list.component').then(m => m.TransactionListComponent)
+      },
       {
         path: 'tasks',
         loadComponent: () => import('./features/admin/tasks/task-list/task-list.component').then(m => m.TaskListComponent)

@@ -13,7 +13,11 @@
       <a routerLink="/admin/tenants" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Khách thuê</a>
       <a routerLink="/admin/contracts" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Hợp đồng</a>
       <a routerLink="/admin/meter-readings" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Ghi Điện/Nước</a>
-      <a routerLink="/admin/invoices" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Hóa đơn & Thu tiền</a>
+      <a routerLink="/admin/invoices" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Hóa đơn & Báo phí</a>
+      
+      <!-- BỔ SUNG NÚT SỔ QUỸ VÀO MENU -->
+      <a routerLink="/admin/transactions" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Sổ Quỹ (Thu/Chi)</a>
+
       <a routerLink="/admin/tasks" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Yêu cầu & Sự cố</a>
       
       <a *ngIf="userRole === 'OWNER'" routerLink="/admin/users" routerLinkActive="active" class="menu-item" (click)="closeSidebar()">Nhân viên</a>

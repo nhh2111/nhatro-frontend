@@ -42,10 +42,11 @@ export class TaskListComponent implements OnInit {
       room_id: [null], 
       title: ['', Validators.required],
       content: [''],
-      status: ['OPEN'] 
+      status: ['OPEN'],
+      assignee: [''], 
+      cost: [0, Validators.min(0)] 
     });
 
-    // Lắng nghe sự thay đổi của trường Nhà để tự động lọc Phòng
     this.taskForm.get('house_id')?.valueChanges.subscribe(houseId => {
       this.onHouseChange(Number(houseId));
     });
@@ -142,7 +143,7 @@ export class TaskListComponent implements OnInit {
   openAddModal(): void {
     this.isEditMode = false;
     this.editingTaskId = null;
-    this.taskForm.reset({ status: 'OPEN', house_id: '', room_id: null });
+    this.taskForm.reset({ status: 'OPEN', house_id: '', room_id: null, cost: 0, assignee: '' });
     this.showModal = true;
   }
 
@@ -155,7 +156,9 @@ export class TaskListComponent implements OnInit {
       room_id: task.room_id,
       title: task.title,
       content: task.content,
-      status: task.status
+      status: task.status,
+      assignee: task.assignee || '', 
+      cost: task.cost || 0
     });
     
     this.showModal = true;
@@ -176,7 +179,8 @@ export class TaskListComponent implements OnInit {
     const payload = {
       ...rawValue,
       house_id: Number(rawValue.house_id),
-      room_id: rawValue.room_id ? Number(rawValue.room_id) : null
+      room_id: rawValue.room_id ? Number(rawValue.room_id) : null,
+      cost: Number(rawValue.cost) || 0
     };
 
     if (this.isEditMode && this.editingTaskId) {

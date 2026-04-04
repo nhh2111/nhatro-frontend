@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { TenantService } from '../../../../services/tenant.service';
 import { AuthService } from '../../../../services/auth.service';
+import { UploadService } from '../../../../services/upload.service'; // Bổ sung UploadService
 
 @Component({
   selector: 'app-tenant-list',
@@ -16,8 +17,9 @@ export class TenantListComponent implements OnInit {
   private fb = inject(FormBuilder);
   private platformId = inject(PLATFORM_ID);
   private authService = inject(AuthService);
-  userRole: string = '';
+  public uploadService = inject(UploadService); // Inject để dùng formatImageUrl trên HTML
 
+  userRole: string = '';
   tenantList: any[] = [];
   isLoading: boolean = false;
   errorMessage: string = '';
@@ -32,6 +34,10 @@ export class TenantListComponent implements OnInit {
   isEditMode: boolean = false;
   currentTenantId?: number;
 
+  // BIẾN XỬ LÝ ẢNH
+  selectedImageFile: File | null = null;
+  previewImageUrl: string | null = null;
+
   tenantForm: FormGroup = this.fb.group({
     full_name: ['', Validators.required],
     phone: ['', [Validators.required, Validators.pattern('^[0-9]{10,11}$')]],
@@ -42,7 +48,7 @@ export class TenantListComponent implements OnInit {
     car_count: [0, [Validators.required, Validators.min(0)]],      
     license_plates: [''],
     address: [''],
-    image_url: ['']
+    image_url: [''] // Chứa URL cũ để gửi xuống Backend nếu update
   });
 
   ngOnInit(): void {
@@ -100,8 +106,10 @@ export class TenantListComponent implements OnInit {
   openAddModal(): void {
     this.isEditMode = false;
     this.currentTenantId = undefined;
+    this.selectedImageFile = null;
+    this.previewImageUrl = null;
+    
     this.tenantForm.reset();
-    // Đặt lại các giá trị mặc định cho form
     this.tenantForm.patchValue({
       gender: 'MALE',
       motorbike_count: 0,
@@ -113,6 +121,10 @@ export class TenantListComponent implements OnInit {
   openEditModal(tenant: any): void {
     this.isEditMode = true;
     this.currentTenantId = tenant.id;
+    this.selectedImageFile = null;
+
+    // Load ảnh cũ
+    this.previewImageUrl = tenant.image_url ? this.uploadService.formatImageUrl(tenant.image_url) : null;
 
     const formattedDob = tenant.dob ? tenant.dob.substring(0, 10) : '';
 
@@ -135,21 +147,59 @@ export class TenantListComponent implements OnInit {
     this.showModal = false;
   }
 
+  // LOGIC XỬ LÝ CHỌN ẢNH TỪ MÁY TÍNH
+  onImageSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedImageFile = file;
+      // Tạo URL ảo để hiển thị preview ngay lập tức
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.previewImageUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeSelectedImage(): void {
+    this.selectedImageFile = null;
+    this.previewImageUrl = null;
+  }
+
   saveTenant(): void {
     if (this.tenantForm.invalid) {
       alert('Vui lòng điền đúng và đủ thông tin bắt buộc (Họ tên, SĐT, CCCD)');
       return;
     }
 
-    const tenantData = { ...this.tenantForm.value };
-    if (!tenantData.dob) {
-      tenantData.dob = ""; 
-    }
-
     this.isLoading = true;
 
+    // CHUYỂN JSON THÀNH FORMDATA ĐỂ GỬI KÈM FILE ẢNH
+    const formData = new FormData();
+    const rawValue = this.tenantForm.value;
+
+    formData.append('full_name', rawValue.full_name);
+    formData.append('phone', rawValue.phone);
+    formData.append('cccd', rawValue.cccd);
+    formData.append('dob', rawValue.dob || '');
+    formData.append('gender', rawValue.gender);
+    formData.append('motorbike_count', rawValue.motorbike_count.toString());
+    formData.append('car_count', rawValue.car_count.toString());
+    formData.append('license_plates', rawValue.license_plates || '');
+    formData.append('address', rawValue.address || '');
+
+    // Nếu người dùng có chọn ảnh mới
+    if (this.selectedImageFile) {
+      formData.append('image', this.selectedImageFile);
+    }
+
+    // Nếu là Update và có ảnh cũ (để Backend biết đường xóa file rác)
+    if (this.isEditMode) {
+      formData.append('old_image_url', rawValue.image_url || '');
+    }
+
     if (this.isEditMode && this.currentTenantId) {
-      this.tenantService.updateTenant(this.currentTenantId, tenantData).subscribe({
+      this.tenantService.updateTenant(this.currentTenantId, formData).subscribe({
         next: () => { 
           alert('Cập nhật thành công!'); 
           this.closeModal(); 
@@ -162,7 +212,7 @@ export class TenantListComponent implements OnInit {
         }
       });
     } else {
-      this.tenantService.createTenant(tenantData).subscribe({
+      this.tenantService.createTenant(formData).subscribe({
         next: () => { 
           alert('Thêm khách mới thành công!'); 
           this.closeModal(); 

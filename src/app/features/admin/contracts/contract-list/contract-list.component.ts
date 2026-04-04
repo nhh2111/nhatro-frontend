@@ -42,6 +42,7 @@ export class ContractListComponent implements OnInit {
     start_date: ['', Validators.required],
     end_date: ['', Validators.required],
     deposit_amount: [0, [Validators.required, Validators.min(0)]],
+    terms: [''],
   });
 
   ngOnInit(): void {
@@ -126,7 +127,8 @@ export class ContractListComponent implements OnInit {
       ...rawValue,
       room_id: Number(rawValue.room_id),
       tenant_id: Number(rawValue.tenant_id),
-      deposit_amount: Number(rawValue.deposit_amount)
+      deposit_amount: Number(rawValue.deposit_amount),
+      terms: rawValue.terms
     };
 
     this.contractService.createContract(contractData).subscribe({

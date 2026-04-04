@@ -21,6 +21,7 @@
                 <thead>
                     <tr>
                         <th>ID</th>
+                        <th>Hình Ảnh</th>
                         <th>Họ Tên</th>
                         <th>SĐT</th>
                         <th>CCCD/CMND</th>
@@ -32,14 +33,19 @@
                 <tbody>
                     <tr *ngFor="let tenant of tenantList">
                         <td>#{{ tenant.id }}</td>
+                        <td>
+                            <!-- THÊM HIỂN THỊ ẢNH CCCD/CHÂN DUNG VÀO BẢNG -->
+                            <img *ngIf="tenant.image_url" [src]="uploadService.formatImageUrl(tenant.image_url)" 
+                                 style="width: 45px; height: 45px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
+                            <span *ngIf="!tenant.image_url" style="color: #bdc3c7; font-size: 12px;">Trống</span>
+                        </td>
                         <td class="fw-bold">{{ tenant.full_name }}</td>
                         <td style="color: #2980b9; font-weight: 600;">{{ tenant.phone }}</td>
                         <td class="fw-bold">{{ tenant.cccd }}</td>
                         <td>
                             <span *ngIf="tenant.vehicle_type === 'MOTORBIKE'"
                                 style="font-size: 12px; color: #e67e22;">(Xe máy)</span>
-                            <span *ngIf="tenant.vehicle_type === 'CAR'" style="font-size: 12px; color: #27ae60;">(Ô
-                                tô)</span>
+                            <span *ngIf="tenant.vehicle_type === 'CAR'" style="font-size: 12px; color: #27ae60;">(Ô tô)</span>
                             {{ tenant.license_plates || '---' }}
                         </td>
                         <td>{{ tenant.address || '---' }}</td>
@@ -88,8 +94,30 @@
             <button class="btn-close" (click)="closeModal()">×</button>
         </div>
 
-        <form [formGroup]="tenantForm" (ngSubmit)="saveTenant()">
+        <!-- BỎ (ngSubmit) VÀ DÙNG NGAY Ở BUTTON ĐỂ CHẶN LỖI SUBMIT -->
+        <form [formGroup]="tenantForm">
             <div class="form-grid">
+                
+                <!-- GIAO DIỆN UPLOAD ẢNH CÁ NHÂN -->
+                <div class="form-group full-width" style="text-align: center; margin-bottom: 15px;">
+                    <div style="position: relative; display: inline-block;">
+                        <img [src]="previewImageUrl || 'assets/default-avatar.png'" 
+                             style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px dashed #bdc3c7; background-color: #f9f9f9;">
+                        
+                        <button *ngIf="previewImageUrl" type="button" (click)="removeSelectedImage()"
+                                style="position: absolute; top: -10px; right: -10px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">
+                            ×
+                        </button>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <input type="file" id="tenantImageUpload" accept="image/*" style="display: none;" (change)="onImageSelected($event)">
+                        <button type="button" onclick="document.getElementById('tenantImageUpload').click()"
+                            style="padding: 8px 15px; background: #ecf0f1; border: 1px solid #bdc3c7; border-radius: 5px; cursor: pointer; color: #2c3e50; font-weight: 500;">
+                            📷 Chọn ảnh CCCD/Chân dung
+                        </button>
+                    </div>
+                </div>
+
                 <div class="form-group full-width">
                     <label>Họ và Tên (*)</label>
                     <input type="text" formControlName="full_name" placeholder="VD: Nguyễn Văn A">
@@ -138,19 +166,15 @@
                 </div>
 
                 <div class="form-group full-width">
-                    <label>Link ảnh CCCD (Tùy chọn)</label>
-                    <input type="text" formControlName="image_url"
-                        placeholder="Dán link ảnh (Google Drive/Imgur...) vào đây">
-                </div>
-
-                <div class="form-group full-width">
                     <label>Địa chỉ / Quê quán</label>
                     <textarea formControlName="address" rows="2" placeholder="Nhập địa chỉ thường trú..."></textarea>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
-                <button type="submit" class="btn-save">{{ isEditMode ? 'Lưu Thay Đổi' : 'Tạo Hồ Sơ' }}</button>
+                <button type="button" class="btn-save" (click)="saveTenant()">
+                    {{ isLoading ? 'Đang xử lý...' : (isEditMode ? 'Lưu Thay Đổi' : 'Tạo Hồ Sơ') }}
+                </button>
             </div>
         </form>
     </div>

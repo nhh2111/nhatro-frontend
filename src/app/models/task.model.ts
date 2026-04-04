@@ -8,4 +8,6 @@ export interface Task {
     created_at?: string;
     finished_at?: string;
     owner_id: number;
+    assignee?: string; 
+    cost?: number;     
 }

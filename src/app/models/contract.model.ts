@@ -6,4 +6,5 @@ export interface Contract {
   end_date: string;
   deposit_amount: number;
   status: string;
+  terms?: string; 
 }
