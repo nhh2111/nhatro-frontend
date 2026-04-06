@@ -1,0 +1,49 @@
+// Khu vực input chọn tháng lịch sử
+.month-picker {
+  padding: 10px 15px;
+  border-radius: 6px;
+  border: 1px solid #dcdde1;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text-main);
+  outline: none;
+  transition: 0.3s;
+  cursor: pointer;
+  
+  &:focus { 
+    border-color: var(--primary); 
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); 
+  }
+}
+
+// Bố cục nút bấm cho form Ghi điện nước
+.form-actions {
+  display: flex; 
+  gap: 15px; 
+  margin-top: 25px;
+  
+  button {
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+  }
+
+  .btn-cancel {
+    flex: 1;
+    background-color: #ecf0f1;
+    color: var(--text-muted);
+    &:hover { background-color: #bdc3c7; }
+  }
+
+  .btn-save {
+    flex: 2;
+    background-color: var(--info);
+    color: white;
+    &:hover { background-color: #2471a3; }
+    &:disabled { background-color: #95a5a6; cursor: not-allowed; }
+  }
+}

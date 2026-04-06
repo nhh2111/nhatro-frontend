@@ -51,7 +51,7 @@ export class TransactionListComponent implements OnInit {
           this.totalRecords = res.result.recordCount || 0;
           this.totalPages = res.result.pageCount || 0;
           
-          this.calculateSummary(); // Tính toán thẻ tổng kết
+          this.calculateSummary(); 
         }
         this.isLoading = false; 
       },
@@ -59,7 +59,6 @@ export class TransactionListComponent implements OnInit {
     });
   }
 
-  // Hàm tính toán Doanh thu, Chi phí, Lợi nhuận hiển thị lên màn hình
   calculateSummary(): void {
     this.totalIncome = 0;
     this.totalExpense = 0;

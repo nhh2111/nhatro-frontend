@@ -4,15 +4,10 @@
     <button class="btn-add" (click)="openAddModal()">+ Lập Hợp Đồng Mới</button>
   </div>
 
-  <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+  <div class="filter-section">
     <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-      placeholder="Tìm theo Số phòng, Tên khách..."
-      style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
-
-    <button (click)="onSearch()"
-      style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
-      Tìm kiếm
-    </button>
+      placeholder="Tìm theo Số phòng, Tên khách...">
+    <button (click)="onSearch()">Tìm kiếm</button>
   </div>
 
   <div class="loading-msg" *ngIf="isLoading">Đang tải dữ liệu...</div>
@@ -24,6 +19,7 @@
         <thead>
           <tr>
             <th>Mã HĐ</th>
+            <th>Khu Trọ</th>
             <th>Phòng</th>
             <th>Người Thuê</th>
             <th>Ngày Bắt Đầu</th>
@@ -37,19 +33,17 @@
         <tbody>
           <tr *ngFor="let c of contractList">
             <td>#{{ c.id }}</td>
+            <td class="fw-bold">{{ c.Room?.House?.name || '---' }}</td>
             <td class="fw-bold">P.{{ c.Room?.room_number }}</td>
             <td>{{ c.Tenant?.full_name }}</td>
             <td>{{ c.start_date | date:'dd/MM/yyyy' }}</td>
             <td>{{ c.end_date | date:'dd/MM/yyyy' }}</td>
             <td class="price">{{ c.deposit_amount | number:'1.0-0' }} đ</td>
-            <!-- CỘT ĐIỀU KHOẢN CÓ NÚT XEM THÊM -->
-            <td style="max-width: 250px;">
+            <td class="terms-cell">
               <div [ngClass]="{'expanded-text': c.isExpanded, 'truncated-text': !c.isExpanded}">
                 {{ c.terms || 'Không có' }}
               </div>
-              <!-- Chỉ hiện nút Xem thêm nếu có chữ và chữ đủ dài -->
-              <a href="javascript:void(0)" *ngIf="c.terms && c.terms.length > 50" (click)="c.isExpanded = !c.isExpanded"
-                style="color: #2980b9; font-size: 12px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 5px;">
+              <a href="javascript:void(0)" class="link-more" *ngIf="c.terms && c.terms.length > 50" (click)="c.isExpanded = !c.isExpanded">
                 {{ c.isExpanded ? 'Thu gọn v' : 'Xem thêm...' }}
               </a>
             </td>
@@ -59,32 +53,23 @@
               </span>
             </td>
             <td class="actions">
-              <button class="btn-delete" *ngIf="c.status === 'ACTIVE'" (click)="terminateContract(c.id)">Thanh
-                lý</button>
+              <button class="btn-delete" *ngIf="c.status === 'ACTIVE'" (click)="terminateContract(c.id)">Thanh lý</button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div *ngIf="totalPages > 0"
-      style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
-      <div style="color: #7f8c8d; font-size: 14px;">
+    <div class="pagination-container" *ngIf="totalPages > 0">
+      <div class="pagination-info">
         Hiển thị <b>{{ contractList.length }}</b> / Tổng <b>{{ totalRecords }}</b> hợp đồng
       </div>
-
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+      <div class="pagination-controls">
+        <button class="btn-page" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" [class.disabled]="currentPage === 1">
           ❮ Trước
         </button>
-
-        <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
-
-        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+        <span class="page-current">Trang {{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn-page" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" [class.disabled]="currentPage === totalPages">
           Sau ❯
         </button>
       </div>
@@ -97,7 +82,7 @@
 </div>
 
 <div class="modal-overlay" *ngIf="showModal">
-  <div class="modal-content" style="max-width: 600px;">
+  <div class="modal-content md">
     <div class="modal-header">
       <h3>Lập Hợp Đồng Mới</h3>
       <button class="btn-close" (click)="closeModal()">×</button>
@@ -105,20 +90,29 @@
 
     <form [formGroup]="contractForm" (ngSubmit)="saveContract()">
       <div class="form-grid">
-
         <div class="form-group full-width">
-          <label>Chọn Phòng Đang Trống</label>
-          <select formControlName="room_id">
-            <option value="" disabled selected>-- Chọn phòng --</option>
-            <option *ngFor="let r of availableRooms" [value]="r.id">
-              Phòng {{ r.room_number }} (Tầng {{ r.floor }} - {{ r.base_price | number }}đ)
-            </option>
+          <label>1. Chọn Khu Trọ / Tòa Nhà</label>
+          <select formControlName="house_id" (change)="onHouseChange()">
+            <option value="" disabled selected>-- Chọn khu trọ --</option>
+            <option *ngFor="let h of houseList" [value]="h.id">{{ h.name }}</option>
           </select>
-          <small *ngIf="availableRooms.length === 0" style="color: red;">Không có phòng trống!</small>
         </div>
 
         <div class="form-group full-width">
-          <label>Chọn Khách Thuê (Đại diện)</label>
+          <label>2. Chọn Phòng Đang Trống</label>
+          <select formControlName="room_id" [disabled]="!contractForm.value.house_id">
+            <option value="" disabled selected>-- Chọn phòng --</option>
+            <option *ngFor="let r of filteredAvailableRooms" [value]="r.id">
+              Phòng {{ r.room_number }} (Tầng {{ r.floor }} - {{ r.base_price | number }}đ)
+            </option>
+          </select>
+          <small class="text-danger" *ngIf="contractForm.value.house_id && filteredAvailableRooms.length === 0">
+            Khu trọ này đã hết phòng trống!
+          </small>
+        </div>
+
+        <div class="form-group full-width">
+          <label>3. Chọn Khách Thuê (Đại diện)</label>
           <select formControlName="tenant_id">
             <option value="" disabled selected>-- Chọn khách --</option>
             <option *ngFor="let t of tenantList" [value]="t.id">
@@ -146,12 +140,11 @@
           <label>Điều khoản thỏa thuận</label>
           <textarea formControlName="terms" rows="3" placeholder="Nhập các điều khoản riêng (nếu có)..."></textarea>
         </div>
-
       </div>
 
       <div class="modal-footer">
         <button type="button" class="btn-cancel" (click)="closeModal()">Hủy</button>
-        <button type="submit" class="btn-save" [disabled]="availableRooms.length === 0">Lập Hợp Đồng</button>
+        <button type="submit" class="btn-save" [disabled]="contractForm.invalid">Lập Hợp Đồng</button>
       </div>
     </form>
   </div>

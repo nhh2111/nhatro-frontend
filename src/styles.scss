@@ -1,6 +1,4 @@
-/* ==========================================================================
-   1. CẤU HÌNH GỐC (BIẾN MÀU VÀ FONT)
-   ========================================================================== */
+// 1. CẤU HÌNH GỐC (BIẾN MÀU VÀ FONT)
 :root {
   --primary: #3498db;
   --success: #27ae60;
@@ -20,9 +18,7 @@ html, body {
   font-size: 16px; /* Kích thước chuẩn trên PC */
 }
 
-/* ==========================================================================
-   2. BỐ CỤC CHUNG CỦA CÁC TRANG (PAGE HEADER, CARDS)
-   ========================================================================== */
+// 2. BỐ CỤC CHUNG CỦA CÁC TRANG (PAGE HEADER, CARDS)
 .page-container { padding: 20px; }
 
 .page-header {
@@ -45,9 +41,7 @@ html, body {
   text-align: center; padding: 30px; background: white; border-radius: 8px; color: var(--text-muted);
 }
 
-/* ==========================================================================
-   3. BẢNG DỮ LIỆU (DATA TABLE) - TỰ ĐỘNG CUỘN TRÊN MOBILE
-   ========================================================================== */
+// 3. BẢNG DỮ LIỆU (DATA TABLE) - TỰ ĐỘNG CUỘN TRÊN MOBILE
 .table-responsive {
   width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
 }
@@ -78,9 +72,7 @@ html, body {
   }
 }
 
-/* ==========================================================================
-   4. MODAL (POPUP FORM)
-   ========================================================================== */
+// 4. MODAL (POPUP FORM)
 .modal-overlay {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center;
@@ -124,9 +116,7 @@ html, body {
   }
 }
 
-/* ==========================================================================
-   5. RESPONSIVE (TỰ ĐỘNG THU NHỎ TRÊN ĐIỆN THOẠI)
-   ========================================================================== */
+// 5. RESPONSIVE (TỰ ĐỘNG THU NHỎ TRÊN ĐIỆN THOẠI)
 @media (max-width: 768px) {
   html, body { font-size: 14px; } /* Thu nhỏ toàn bộ chữ */
   .page-container { padding: 10px; }
@@ -143,9 +133,7 @@ html, body {
   .modal-content form .form-group.full-width { grid-column: span 1; }
 }
 
-/* ==========================================================================
-   6. GIAO DIỆN XÁC THỰC (LOGIN, REGISTER, OTP)
-   ========================================================================== */
+// 6. GIAO DIỆN XÁC THỰC (LOGIN, REGISTER, OTP)
 .login-wrapper {
   min-height: 100vh; display: flex; align-items: center; justify-content: center;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -184,9 +172,7 @@ html, body {
   }
 }
 
-/* ==========================================================================
-   7. RESPONSIVE BỔ SUNG CHO FORM VÀ PROFILE TRÊN MOBILE
-   ========================================================================== */
+// 7. RESPONSIVE BỔ SUNG CHO FORM VÀ PROFILE TRÊN MOBILE
 @media (max-width: 768px) {
   .login-card { padding: 25px 20px; } /* Thu nhỏ lề card đăng nhập trên điện thoại */
   .form-grid { grid-template-columns: 1fr !important; } /* Ép Form 2 cột về 1 cột */

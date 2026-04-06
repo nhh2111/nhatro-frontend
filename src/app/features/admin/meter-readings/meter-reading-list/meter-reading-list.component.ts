@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { RoomService } from '../../../../services/room.service';
 import { ServiceService } from '../../../../services/service.service';
+import { HouseService } from '../../../../services/house.service'; // BỔ SUNG
 
 @Component({
   selector: 'app-meter-reading-list',
@@ -17,11 +18,17 @@ export class MeterReadingListComponent implements OnInit {
   private http = inject(HttpClient);
   private roomService = inject(RoomService);
   private serviceService = inject(ServiceService);
+  private houseService = inject(HouseService); // BỔ SUNG
   private fb = inject(FormBuilder);
   private platformId = inject(PLATFORM_ID);
 
-  rooms: any[] = [];
   meterServices: any[] = []; 
+  
+  // BIẾN PHÂN CẤP NHÀ -> PHÒNG
+  houseList: any[] = [];
+  allOccupiedRooms: any[] = [];
+  filteredRooms: any[] = [];
+
   isLoading: boolean = false;
   isEditMode: boolean = false;
   currentReadingId?: number;
@@ -30,6 +37,7 @@ export class MeterReadingListComponent implements OnInit {
   readingsList: any[] = [];
 
   readingForm: FormGroup = this.fb.group({
+    house_id: ['', Validators.required], // BỔ SUNG
     room_id: ['', Validators.required],
     service_id: ['', Validators.required],
     reading_date: ['', Validators.required],
@@ -45,19 +53,31 @@ export class MeterReadingListComponent implements OnInit {
   }
 
   loadDropdownData(): void {
-    // 1. Sửa lỗi lấy danh sách phòng (Truyền tham số và dùng res.result.records)
+    // 1. Tải danh sách Khu trọ
+    this.houseService.getAllHouses(1, 100, '').subscribe(res => {
+      if (res.errorCode === 200) this.houseList = res.result.records;
+    });
+
+    // 2. Tải TẤT CẢ các phòng ĐANG THUÊ
     this.roomService.getAllRooms(1, 100, '').subscribe(res => {
       if (res.errorCode === 200 && res.result && res.result.records) {
-        this.rooms = res.result.records.filter((r: any) => r.status === 'OCCUPIED');
+        this.allOccupiedRooms = res.result.records.filter((r: any) => r.status === 'OCCUPIED');
       }
     });
 
-    // 2. Sửa lỗi lấy danh sách dịch vụ
+    // 3. Tải danh sách dịch vụ đo bằng đồng hồ
     this.serviceService.getAllServices(1, 100, '').subscribe(res => {
       if (res.errorCode === 200 && res.result && res.result.records) {
         this.meterServices = res.result.records.filter((s: any) => s.service_type === 'METERED' || s.service_type === 'METER');
       }
     });
+  }
+
+  // HÀM LỌC PHÒNG KHI ĐỔI TÒA NHÀ
+  onHouseChange(): void {
+    const selectedHouseId = Number(this.readingForm.value.house_id);
+    this.filteredRooms = this.allOccupiedRooms.filter(r => r.house_id === selectedHouseId);
+    this.readingForm.patchValue({ room_id: '' });
   }
 
   loadReadings(): void {
@@ -79,6 +99,13 @@ export class MeterReadingListComponent implements OnInit {
     
     const formattedDate = reading.reading_date ? reading.reading_date.substring(0, 10) : '';
     
+    // Lấy ID nhà từ thông tin Room đính kèm
+    const hId = reading.Room?.house_id;
+
+    // Gắn nhà trước, lọc phòng rồi mới gắn phòng
+    this.readingForm.patchValue({ house_id: hId });
+    this.filteredRooms = this.allOccupiedRooms.filter(r => r.house_id === hId);
+    
     this.readingForm.patchValue({
       room_id: reading.room_id,
       service_id: reading.service_id,
@@ -87,6 +114,7 @@ export class MeterReadingListComponent implements OnInit {
       new_index: reading.new_index
     });
     
+    this.readingForm.get('house_id')?.disable();
     this.readingForm.get('room_id')?.disable();
     this.readingForm.get('service_id')?.disable();
     
@@ -96,7 +124,9 @@ export class MeterReadingListComponent implements OnInit {
   cancelEdit(): void {
     this.isEditMode = false;
     this.currentReadingId = undefined;
-    this.readingForm.reset({ old_index: 0, new_index: 0 });
+    this.readingForm.reset({ old_index: 0, new_index: 0, house_id: '', room_id: '', service_id: '' });
+    this.filteredRooms = []; // Reset lại ds phòng
+    this.readingForm.get('house_id')?.enable();
     this.readingForm.get('room_id')?.enable();
     this.readingForm.get('service_id')?.enable();
   }
