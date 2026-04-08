@@ -29,9 +29,13 @@
   --space-4: 18px;
   --space-5: 24px;
 }
-*, *::before, *::after {
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
+
 /* ==========================================
        THEME: DARK (BẬT BẰNG data-theme="dark")
        ========================================== */
@@ -295,12 +299,23 @@ input[type="month"] {
 /* ==========================================
        4) BẢNG DỮ LIỆU (DATA TABLE)
        ========================================== */
+.table-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  width: 100%;
+  /* Bổ sung: Ép thẻ card không bao giờ được rộng hơn màn hình */
+  overflow: hidden;
+  /* Bổ sung: Giữ mọi thứ nằm gọn trong viền bo góc */
+}
+
 .table-responsive {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 20px;
-  overflow: visible;
+
 }
 
 .data-table {
@@ -686,8 +701,10 @@ input[type="month"] {
 }
 
 .form-group {
-  text-align: left;        /* Ép chữ (Email, Mật khẩu) bám sang trái */
-  margin-bottom: 20px;     /* Tạo khoảng cách giữa các ô nhập liệu */
+  text-align: left;
+  /* Ép chữ (Email, Mật khẩu) bám sang trái */
+  margin-bottom: 20px;
+  /* Tạo khoảng cách giữa các ô nhập liệu */
   display: flex;
   flex-direction: column;
 
@@ -695,7 +712,8 @@ input[type="month"] {
     font-size: 16px;
     font-weight: 600;
     color: var(--text-main);
-    margin-bottom: 8px;    /* Khoảng cách từ chữ xuống ô input */
+    margin-bottom: 8px;
+    /* Khoảng cách từ chữ xuống ô input */
   }
 }
 
@@ -1297,4 +1315,3 @@ input[type="month"] {
     }
   }
 }
-
