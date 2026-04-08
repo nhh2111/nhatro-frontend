@@ -3,10 +3,8 @@
     <h2>Thông tin cá nhân</h2>
   </div>
 
-  <!-- Nới rộng khung lên 700px và tăng khoảng cách lề (padding) cho thoáng -->
   <div class="form-card" style="max-width: 700px; margin: 0 auto 30px auto; padding: 40px; text-align: center;">
     
-    <!-- KHU VỰC ẢNH ĐẠI DIỆN -->
     <div class="profile-avatar-section" style="margin-bottom: 40px;">
       <div class="avatar-wrapper" style="position: relative; display: inline-block; margin-bottom: 15px;">
         <img [src]="previewAvatar || profileForm.get('avatar')?.value || defaultAvatar" alt="Avatar" style="width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 4px solid var(--border); box-shadow: var(--shadow-sm);">
@@ -22,9 +20,7 @@
       </p>
     </div>
 
-    <!-- KHU VỰC FORM THÔNG TIN -->
     <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" style="text-align: left;">
-      <!-- Tăng gap lên 24px để các hàng không bị dính sát vào nhau -->
       <div class="form-grid" style="gap: 24px;">
         
         <div class="form-group full-width">
@@ -41,14 +37,12 @@
           <label>Số CCCD / CMND</label>
           <input type="text" formControlName="cccd">
         </div>
-        
-        <!-- Để Email trải dài toàn màn hình cho đẹp và dễ đọc -->
+
         <div class="form-group full-width">
           <label>Email đăng nhập</label>
           <input type="email" formControlName="email" readonly>
         </div>
-        
-        <!-- Để Quyền hạn trải dài toàn màn hình -->
+
         <div class="form-group full-width">
           <label>Quyền hạn hệ thống</label>
           <input type="text" formControlName="role" readonly>
