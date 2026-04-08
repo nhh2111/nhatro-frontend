@@ -22,6 +22,35 @@
 .form-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
 }
+.form-group {   
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 5px;
+  }
+  input {
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    background-color: var(--bg);
+    color: var(--text-main);
+  }
+  input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: var(--ring);
+  }
+  input:disabled {
+    background-color: rgba(148, 163, 184, 0.08);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  } 
+}
 
 .form-actions {
   margin-top: 30px; text-align: center;

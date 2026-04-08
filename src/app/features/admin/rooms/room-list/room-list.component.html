@@ -3,13 +3,10 @@
     <h2>Quản lý Danh sách Phòng</h2>
     <button *ngIf="userRole === 'OWNER'" class="btn-add" (click)="openAddModal()">+ Thêm Phòng Mới</button>
   </div>
-  <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Tìm kiếm theo Số phòng..."
-      style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
-    <button (click)="onSearch()"
-      style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
-      Tìm kiếm
-    </button>
+  <div class="filter-section">
+    <input class="input" type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+      placeholder="Tìm kiếm theo số phòng, tòa nhà">
+    <button class="btn-info" (click)="onSearch()">Tìm kiếm</button>
   </div>
 
   <div class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
@@ -21,94 +18,82 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Khu Trọ / Nhà</th>
-              <th>Số Phòng</th>
-              <th>Tầng</th>
-              <th>Diện Tích</th>
-              <th>Giới Tính</th>
-              <th>Giá Cơ Bản</th>
-              <th>Sức Chứa</th>
-              <th>Hình Ảnh</th>
-              <th style="max-width: 150px;">Mô Tả</th>
-              <th>Trạng Thái</th>
-              <th>Hành Động</th>
+              <th style="width: 15%;">Khu Trọ</th>
+              <th style="width: 35%;">Thông tin & Mô tả</th> <!-- Tăng độ rộng cột này -->
+              <th style="width: 25%;">Trạng thái & Sức chứa</th>
+              <th style="width: 15%;">Giá Cơ Bản</th>
+              <th style="width: 10%; text-align: right;">Hành động</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let room of roomList">
-              <td class="fw-bold" style="color: #2c3e50;">{{ getHouseName(room.house_id) }}</td>
-              <td class="fw-bold">{{ room.room_number }}</td>
-              <td>Tầng {{ room.floor }}</td>
+              <!-- 1. Khu trọ -->
+              <td class="fw-bold">{{ getHouseName(room.house_id) }}</td>
 
-              <td>{{ room.width * room.length }} m²</td>
-
+              <!-- 2. Thông tin Phòng + MÔ TẢ (Gộp vào đây cho thoáng) -->
               <td>
-                <span *ngIf="room.gender_restriction === 'ALL'">Tất cả</span>
-                <span *ngIf="room.gender_restriction === 'MALE'">Chỉ Nam</span>
-                <span *ngIf="room.gender_restriction === 'FEMALE'">Chỉ Nữ</span>
+                <div style="font-size: 18px; font-weight: 700; color: var(--info);">P.{{ room.room_number }}</div>
+                <div style="color: #7f8c8d; font-weight: 500; margin-bottom: 5px;">
+                  Tầng {{ room.floor }} • {{ room.width * room.length }} m²
+                </div>
+
+                <!-- PHẦN MÔ TẢ: Hiển thị nhỏ gọn bên dưới -->
+                <div *ngIf="room.description"
+                  style="font-size: 13px; color: #95a5a6; font-style: italic; border-left: 2px solid #eee; padding-left: 8px; margin-top: 5px;">
+                  {{ (room.description.length > 80) ? (room.description | slice:0:80) + '...' : room.description }}
+                </div>
               </td>
 
-              <td class="price">{{ room.base_price | number:'1.0-0' }} đ</td>
-              <td>{{ room.current_occupants || 0 }} / {{ room.max_occupants }}</td>
-
-              <td>
-                <button *ngIf="room.images" class="btn-info" (click)="openGallery(room.images)"
-                  style="cursor: pointer; padding: 4px 10px; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; border-radius: 20px;">
-                  Xem ảnh ({{ getImageCount(room.images) }})
-                </button>
-                <span *ngIf="!room.images" style="color: #95a5a6;">---</span>
-              </td>
-
-              <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                [title]="room.description">
-                {{ room.description || '---' }}
-              </td>
-
+              <!-- 3. Trạng thái -->
               <td>
                 <span class="badge" [ngClass]="{
-                      'badge-success': room.status === 'AVAILABLE', 
-                      'badge-warning': room.status === 'OCCUPIED' && (room.current_occupants || 0) < room.max_occupants,
-                      'badge-danger': room.status === 'OCCUPIED' && (room.current_occupants || 0) >= room.max_occupants,
-                      'badge-dark': room.status === 'MAINTENANCE'
-                    }">
-
-                  <ng-container *ngIf="room.status === 'AVAILABLE'">Trống hoàn toàn</ng-container>
-
-                  <ng-container *ngIf="room.status === 'OCCUPIED'">
-                    {{ (room.current_occupants || 0) < room.max_occupants ? 'Còn chỗ ghép' : 'Đã Kín Phòng' }}
-                      </ng-container>
-
-                      <ng-container *ngIf="room.status === 'MAINTENANCE'">Đang bảo trì</ng-container>
+              'badge-success': room.status === 'AVAILABLE', 
+              'badge-warning': room.status === 'OCCUPIED' && (room.current_occupants || 0) < room.max_occupants,
+              'badge-danger': room.status === 'OCCUPIED' && (room.current_occupants || 0) >= room.max_occupants,
+              'badge-dark': room.status === 'MAINTENANCE'
+            }">
+                  {{ room.status === 'AVAILABLE' ? 'Trống' : (room.status === 'MAINTENANCE' ? 'Bảo trì' : 'Đang thuê')
+                  }}
                 </span>
+                <div style="font-size: 14px; margin-top: 5px;">
+                  <b>{{ room.current_occupants || 0 }}/{{ room.max_occupants }}</b> người •
+                  <small>{{ room.gender_restriction === 'ALL' ? 'Nam & Nữ' : (room.gender_restriction === 'MALE' ? 'Chỉ
+                    Nam' : 'Chỉ Nữ') }}</small>
+                </div>
               </td>
-              <td class="actions">
-                <button *ngIf="userRole === 'OWNER'" class="btn-edit" (click)="openEditModal(room)">Sửa</button>
-                <button class="btn-info" (click)="openServiceModal(room.id)">Dịch vụ</button>
-                <button *ngIf="userRole === 'OWNER'" class="btn-delete" (click)="deleteRoom(room.id)">Xóa</button>
+
+              <!-- 4. Giá -->
+              <td class="price" style="font-size: 16px; font-weight: 700;">{{ room.base_price | number }} đ</td>
+
+              <!-- 5. Hành động -->
+              <td class="actions" style="position: relative; text-align: right;">
+                <button class="btn-dots" (click)="toggleDropdown(room.id, $event)">⋮</button>
+                <div class="dropdown-menu" *ngIf="activeDropdownId === room.id">
+                  <button class="dropdown-item" (click)="openServiceModal(room.id)">Dịch vụ</button>
+                  <button class="dropdown-item" *ngIf="room.images" (click)="openGallery(room.images)">Ảnh thực tế
+                    ({{ getImageCount(room.images) }})</button>
+                  <div style="border-top: 1px solid #f0f0f0; margin: 4px 0;"></div>
+                  <button class="dropdown-item" *ngIf="userRole === 'OWNER'" (click)="openEditModal(room)">Chỉnh
+                    sửa</button>
+                  <button class="dropdown-item text-danger" *ngIf="userRole === 'OWNER'"
+                    (click)="deleteRoom(room.id)">Xóa phòng</button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div *ngIf="totalPages > 0"
-      style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-      <div style="color: #7f8c8d; font-size: 14px;">
+    <div class="pagination-container" *ngIf="totalPages > 0">
+      <div class="pagination-info">
         Hiển thị <b>{{ roomList.length }}</b> / Tổng <b>{{ totalRecords }}</b> phòng
       </div>
-
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+      <div class="pagination-controls">
+        <button class="btn-page" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" [class.disabled]="currentPage === 1">
           ❮ Trước
         </button>
-
-        <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
-
-        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+        <span class="page-current">Trang {{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn-page" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" [class.disabled]="currentPage === totalPages">
           Sau ❯
         </button>
       </div>
@@ -187,18 +172,23 @@
 
       <div class="form-group full-width">
         <label>Hình ảnh phòng</label>
-        
+
         <div style="margin-bottom: 10px;">
-          <input type="file" (change)="onImagesSelected($event)" accept="image/*" multiple id="roomImagesUpload" style="display: none;">
-          <button type="button" class="btn-info" onclick="document.getElementById('roomImagesUpload').click()" [disabled]="isUploading">
+          <input type="file" (change)="onImagesSelected($event)" accept="image/*" multiple id="roomImagesUpload"
+            style="display: none;">
+          <button type="button" class="btn-info" onclick="document.getElementById('roomImagesUpload').click()"
+            [disabled]="isUploading">
             {{ isUploading ? 'Đang tải lên...' : 'Thêm hình ảnh' }}
           </button>
         </div>
 
         <div *ngIf="previewImages.length > 0" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-          <div *ngFor="let img of previewImages; let i = index" style="position: relative; width: 100px; height: 100px;">
-            <img [src]="uploadService.formatImageUrl(img)" style="width: 100%; height: 100%; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
-            <button type="button" (click)="removeImage(i, img)" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 10px;">
+          <div *ngFor="let img of previewImages; let i = index"
+            style="position: relative; width: 100px; height: 100px;">
+            <img [src]="uploadService.formatImageUrl(img)"
+              style="width: 100%; height: 100%; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
+            <button type="button" (click)="removeImage(i, img)"
+              style="position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 10px;">
               X
             </button>
           </div>
@@ -250,20 +240,22 @@
 </div>
 
 <div class="modal-overlay" *ngIf="showGalleryModal" style="z-index: 9999; background: rgba(0,0,0,0.85);">
-  <div style="position: relative; max-width: 800px; width: 90%; display: flex; flex-direction: column; align-items: center;">
+  <div
+    style="position: relative; max-width: 800px; width: 90%; display: flex; flex-direction: column; align-items: center;">
 
     <button (click)="closeGallery()"
       style="position: absolute; top: -40px; right: -10px; background: none; border: none; color: white; font-size: 35px; cursor: pointer; padding: 10px;">
       &times;
     </button>
 
-    <div style="width: 100%; height: 60vh; display: flex; justify-content: center; align-items: center; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <div
+      style="width: 100%; height: 60vh; display: flex; justify-content: center; align-items: center; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
       <img [src]="galleryImages[currentGalleryIndex]" style="max-width: 100%; max-height: 100%; object-fit: contain;">
     </div>
 
     <div *ngIf="galleryImages.length > 1"
       style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 20px; color: white; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 30px;">
-      
+
       <button (click)="prevImage()"
         style="background: none; border: none; color: white; cursor: pointer; font-size: 16px; font-weight: bold; padding: 5px 10px; transition: 0.2s;">
         ❮ Trước

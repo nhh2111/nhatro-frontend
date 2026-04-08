@@ -1,180 +1,1300 @@
-// 1. CẤU HÌNH GỐC (BIẾN MÀU VÀ FONT)
+/* ==========================================
+   1) DESIGN TOKENS (MÀU, SPACING, SHADOW...)
+   ========================================== */
 :root {
-  --primary: #3498db;
-  --success: #27ae60;
-  --danger: #e74c3c;
-  --warning: #f39c12;
-  --info: #2980b9;
-  --text-main: #2c3e50;
-  --text-muted: #7f8c8d;
-  --bg-light: #f4f7f6;
+  --primary: #2f80ed;
+  --info: #1f6feb;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+
+  --bg: #f6f8fb;
+  --surface: #ffffff;
+  --border: #e7edf5;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 12px 28px rgba(15, 23, 42, 0.12);
+
+  --ring: 0 0 0 3px rgba(47, 128, 237, 0.18);
+
+  --space-1: 6px;
+  --space-2: 10px;
+  --space-3: 14px;
+  --space-4: 18px;
+  --space-5: 24px;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+/* ==========================================
+       THEME: DARK (BẬT BẰNG data-theme="dark")
+       ========================================== */
+:root[data-theme='dark'] {
+  --text-main: #e5e7eb;
+  --text-muted: #94a3b8;
+
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --border: rgba(148, 163, 184, 0.18);
+
+  --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 18px 40px rgba(0, 0, 0, 0.55);
+
+  --ring: 0 0 0 3px rgba(96, 165, 250, 0.22);
+  color-scheme: dark;
 }
 
-html, body {
-  margin: 0; padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   color: var(--text-main);
-  background-color: var(--bg-light);
-  font-size: 16px; /* Kích thước chuẩn trên PC */
+  background-color: var(--bg);
+  font-size: 16px;
+  line-height: 1.45;
 }
 
-// 2. BỐ CỤC CHUNG CỦA CÁC TRANG (PAGE HEADER, CARDS)
-.page-container { padding: 20px; }
+/* ==========================================
+       2) LAYOUT CHUNG (PAGE, HEADER, CARD)
+       ========================================== */
+.page-container {
+  padding: var(--space-5);
+}
 
 .page-header {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-  h2 { margin: 0; color: var(--text-main); font-size: 1.5rem; }
-  
-  .btn-add {
-    background-color: var(--success); color: white; padding: 10px 20px;
-    border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
-    &:hover { background-color: #219653; }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+
+  h2,
+  h3 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
   }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
 }
 
 .table-card {
-  background: white; border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  overflow: visible;
 }
 
-.empty-state, .loading-msg, .error-msg {
-  text-align: center; padding: 30px; background: white; border-radius: 8px; color: var(--text-muted);
+/* ==========================================
+       THEME TOGGLE (FLOATING)
+       ========================================== */
+.theme-toggle {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 2000;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  transition: all 0.12s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .theme-toggle__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--info), var(--primary));
+    box-shadow: 0 10px 20px rgba(31, 111, 235, 0.25);
+  }
+
+  .theme-toggle__text {
+    font-size: 13px;
+    line-height: 1;
+    white-space: nowrap;
+  }
 }
 
-// 3. BẢNG DỮ LIỆU (DATA TABLE) - TỰ ĐỘNG CUỘN TRÊN MOBILE
+:root[data-theme='dark'] .theme-toggle {
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.empty-state,
+.loading-msg,
+.error-msg {
+  text-align: center;
+  padding: 30px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+/* ==========================================
+       3) INPUT + BUTTON DÙNG CHUNG
+       ========================================== */
+/* Input Date/Month */
+input[type="date"],
+input[type="month"] {
+  background-color: var(--surface);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: 8px;
+  color-scheme: inherit;
+}
+
+/* Sửa nút chọn tháng (Month Picker) dùng riêng */
+.month-picker {
+  background-color: var(--surface);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  color-scheme: inherit;
+  outline: none;
+
+  &:focus {
+    border-color: var(--primary);
+    box-shadow: var(--ring);
+  }
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: var(--surface);
+  color: var(--text-main);
+  outline: none;
+  transition: all 0.15s ease;
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+
+  &:focus {
+    border-color: rgba(47, 128, 237, 0.55);
+    box-shadow: var(--ring);
+  }
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-add {
+  @extend .btn;
+  background: linear-gradient(135deg, var(--success), #22c55e);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.18);
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.98);
+    box-shadow: 0 10px 22px rgba(22, 163, 74, 0.22);
+  }
+}
+
+.btn-info {
+  @extend .btn;
+  background: linear-gradient(135deg, var(--info), var(--primary));
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(31, 111, 235, 0.18);
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.98);
+  }
+}
+
+.btn-delete {
+  @extend .btn;
+  background: linear-gradient(135deg, var(--danger), #fb7185);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.98);
+  }
+}
+
+.filter-section {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+
+  .input {
+    flex: 1;
+    min-width: 240px;
+    max-width: 420px;
+  }
+}
+
+/* ==========================================
+       4) BẢNG DỮ LIỆU (DATA TABLE)
+       ========================================== */
 .table-responsive {
-  width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 20px;
+  overflow: visible;
 }
 
 .data-table {
-  width: 100%; border-collapse: collapse; min-width: 600px; /* Ép bảng không bị bóp nghẹt */
-  
-  th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-  th { background-color: #f8f9fa; font-weight: 600; color: #495057; white-space: nowrap; }
-  
-  .fw-bold { font-weight: bold; color: var(--info); }
-  .price { font-weight: 500; color: var(--danger); }
-  
-  .badge {
-    padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap;
-    &-success { background-color: #e8f8f5; color: var(--success); }
-    &-warning { background-color: #fef9e7; color: var(--warning); }
-    &-danger { background-color: #fdedec; color: var(--danger); }
-    &-info { background-color: #d6eaf8; color: var(--info); }
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 600px;
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
   }
-  
-  .actions {
-    display: flex; gap: 10px;
-    button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; transition: 0.2s; }
-    .btn-edit { background-color: var(--primary); color: white; &:hover { background-color: var(--info); } }
-    .btn-delete { background-color: var(--danger); color: white; &:hover { background-color: #c0392b; } }
-    .btn-info { background-color: #17a2b8; color: white; &:hover { background-color: #138496; } }
+
+  th,
+  td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  th {
+    background: var(--bg);
+    /* FIX DARK MODE: Dùng var(--bg) thay vì #f8fafc */
+    font-weight: 800;
+    color: var(--text-main);
+    /* FIX DARK MODE: Dùng biến thay vì #334155 */
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background: rgba(47, 128, 237, 0.04);
+    }
+  }
+
+  .fw-bold {
+    font-weight: 800;
+    color: var(--info);
+  }
+
+  .price {
+    font-weight: 800;
+    color: var(--danger);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+
+    &-success {
+      background: rgba(22, 163, 74, 0.1);
+      color: var(--success);
+    }
+
+    &-warning {
+      background: rgba(245, 158, 11, 0.12);
+      color: #b45309;
+    }
+
+    &-danger {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger);
+    }
+
+    &-info {
+      background: rgba(31, 111, 235, 0.1);
+      color: var(--info);
+    }
+
+    &-dark {
+      background: rgba(15, 23, 42, 0.08);
+      color: #0f172a;
+    }
   }
 }
 
-// 4. MODAL (POPUP FORM)
+:root[data-theme='dark'] .data-table {
+  th {
+    background: rgba(148, 163, 184, 0.08);
+    color: rgba(226, 232, 240, 0.92);
+  }
+
+  td {
+    border-bottom-color: rgba(148, 163, 184, 0.14);
+  }
+
+  tbody tr:hover {
+    background: rgba(96, 165, 250, 0.08);
+  }
+
+  /* Sửa màu badge dark trong dark mode */
+  .badge-dark {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+  }
+
+  /* Fix màu cho badge warning trong dark mode */
+  .badge-warning {
+    color: #fbbf24;
+  }
+}
+
+/* ==========================================
+       5) MODAL (POPUP FORM)
+       ========================================== */
 .modal-overlay {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center;
-  z-index: 1000; backdrop-filter: blur(3px); padding: 10px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+  padding: 10px;
 }
 
 .modal-content {
-  background: white; width: 700px; max-width: 100%; border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column;
-  max-height: 90vh; /* Không cho modal vượt quá màn hình */
+  background: var(--surface);
+  width: 720px;
+  max-width: 100%;
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
   animation: slideDown 0.3s ease-out;
 
-  @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  &.lg {
+    width: 850px;
+  }
+
+  &.md {
+    width: 600px;
+  }
+
+  &.no-padding {
+
+    form,
+    .modal-body {
+      padding: 0;
+    }
+  }
+
+  form,
+  .modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #bdc3c7;
+      border-radius: 4px;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-30px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
 
   .modal-header {
-    display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #eee;
-    h3 { margin: 0; color: var(--text-main); }
-    .btn-close { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; &:hover { color: var(--danger); } }
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    /* FIX DARK MODE */
+
+    h3 {
+      margin: 0;
+      color: var(--text-main);
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--text-muted);
+      cursor: pointer;
+
+      &:hover {
+        color: var(--danger);
+      }
+    }
   }
 
   form {
-    padding: 20px; overflow-y: auto; /* Cho phép cuộn bên trong form nếu form quá dài */
-    
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    padding: 20px;
+    overflow-y: auto;
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
     .form-group {
-      display: flex; flex-direction: column;
-      &.full-width { grid-column: span 2; }
-      label { font-size: 14px; font-weight: 600; color: #34495e; margin-bottom: 5px; }
-      input, select, textarea {
-        padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; font-family: inherit;
-        &:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
+      display: flex;
+      flex-direction: column;
+
+      &.full-width {
+        grid-column: span 2;
+      }
+
+      label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+        /* FIX DARK MODE: Thay #34495e bằng biến */
+        margin-bottom: 5px;
+      }
+
+      input,
+      select,
+      textarea {
+        padding: 10px;
+        border: 1px solid var(--border);
+        /* FIX DARK MODE: Thay #bdc3c7 bằng biến */
+        border-radius: 4px;
+        font-family: inherit;
+        background-color: var(--bg);
+        /* FIX DARK MODE: Thêm màu nền cho ô input */
+        color: var(--text-main);
+
+        &:focus {
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
       }
     }
 
     .modal-footer {
-      display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee;
-      button { padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-      .btn-cancel { background-color: #ecf0f1; color: var(--text-muted); &:hover { background-color: #bdc3c7; } }
-      .btn-save { background-color: var(--info); color: white; &:hover { background-color: #2471a3; } }
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+      /* FIX DARK MODE */
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .btn-cancel {
+        background-color: var(--bg);
+        /* FIX DARK MODE */
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+
+        &:hover {
+          background-color: var(--border);
+        }
+      }
+
+      .btn-save {
+        background-color: var(--info);
+        color: white;
+
+        &:hover {
+          background-color: #2471a3;
+        }
+      }
     }
   }
 }
 
-// 5. RESPONSIVE (TỰ ĐỘNG THU NHỎ TRÊN ĐIỆN THOẠI)
+/* ==========================================
+       6) GIAO DIỆN XÁC THỰC (LOGIN) & RESPONSIVE
+       ========================================== */
 @media (max-width: 768px) {
-  html, body { font-size: 14px; } /* Thu nhỏ toàn bộ chữ */
-  .page-container { padding: 10px; }
-  
-  .page-header {
-    flex-direction: column; align-items: flex-start; gap: 10px;
-    .btn-add { width: 100%; } /* Nút Thêm kéo dài toàn màn hình cho dễ bấm */
+
+  html,
+  body {
+    font-size: 14px;
   }
 
-  .data-table th, .data-table td { padding: 10px; } /* Thu nhỏ lề bảng */
-  
-  /* Ép Form 2 cột biến thành 1 cột trên điện thoại */
-  .modal-content form .form-grid { grid-template-columns: 1fr; }
-  .modal-content form .form-group.full-width { grid-column: span 1; }
+  .page-container {
+    padding: 10px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    .btn-add {
+      width: 100%;
+    }
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px;
+  }
+
+  .modal-content form .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content form .form-group.full-width {
+    grid-column: span 1;
+  }
+
+  .login-card {
+    padding: 25px 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-group.full-width {
+    grid-column: span 1 !important;
+  }
 }
 
-// 6. GIAO DIỆN XÁC THỰC (LOGIN, REGISTER, OTP)
 .login-wrapper {
-  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 15px; /* Thêm padding để trên mobile thẻ không bị sát mép màn hình */
+  padding: 15px;
+}
+
+:root[data-theme='dark'] .login-wrapper {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
 .login-card {
-  background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  width: 100%; max-width: 400px; text-align: center;
-  
-  h2 { color: var(--text-main); margin-bottom: 10px; font-size: 24px; }
-  .subtitle { color: var(--text-muted); margin-bottom: 30px; font-size: 14px; }
-}
+  background: var(--surface);
+  /* FIX DARK MODE */
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
 
-.btn-login {
-  width: 100%; padding: 12px; background-color: var(--primary); color: white; border: none;
-  border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 10px;
-  &:hover { background-color: var(--info); }
-  &:disabled { background-color: #bdc3c7; cursor: not-allowed; }
-}
+  h2 {
+    color: var(--text-main);
+    margin-bottom: 10px;
+    font-size: 24px;
+  }
 
-.auth-links {
-  margin-top: 20px; font-size: 14px; color: var(--text-muted);
-  a { color: var(--primary); text-decoration: none; font-weight: 600; &:hover { text-decoration: underline; } }
-}
-
-/* Form Input Chung (Dùng được cho cả Profile và Login) */
-.form-group {
-  text-align: left; margin-bottom: 20px; display: flex; flex-direction: column;
-  label { font-size: 14px; font-weight: 600; color: #34495e; margin-bottom: 8px; }
-  input, select, textarea {
-    width: 100%; padding: 12px 15px; border: 1px solid #dcdde1; border-radius: 6px; font-size: 15px;
-    font-family: inherit; transition: all 0.3s ease; box-sizing: border-box;
-    &:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); }
-    &:disabled, &[readonly] { background-color: #f8f9fa; color: #7f8c8d; cursor: not-allowed; border-color: #ecf0f1; }
+  .subtitle {
+    color: var(--text-muted);
+    margin-bottom: 30px;
+    font-size: 14px;
   }
 }
 
-// 7. RESPONSIVE BỔ SUNG CHO FORM VÀ PROFILE TRÊN MOBILE
-@media (max-width: 768px) {
-  .login-card { padding: 25px 20px; } /* Thu nhỏ lề card đăng nhập trên điện thoại */
-  .form-grid { grid-template-columns: 1fr !important; } /* Ép Form 2 cột về 1 cột */
-  .form-group.full-width { grid-column: span 1 !important; }
+.form-group {
+  text-align: left;        /* Ép chữ (Email, Mật khẩu) bám sang trái */
+  margin-bottom: 20px;     /* Tạo khoảng cách giữa các ô nhập liệu */
+  display: flex;
+  flex-direction: column;
+
+  label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 8px;    /* Khoảng cách từ chữ xuống ô input */
+  }
 }
+
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-top: 10px;
+
+  &:hover {
+    background-color: var(--info);
+  }
+
+  &:disabled {
+    background-color: var(--border);
+    cursor: not-allowed;
+  }
+}
+
+.auth-links {
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--text-muted);
+
+  a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* ==========================================
+       7) UTILITIES & PAGINATION
+       ========================================== */
+.text-success {
+  color: var(--success) !important;
+}
+
+.text-danger {
+  color: var(--danger) !important;
+}
+
+.text-warning {
+  color: var(--warning) !important;
+}
+
+.text-info {
+  color: var(--info) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.text-left {
+  text-align: left !important;
+}
+
+.mt-4 {
+  margin-top: 25px !important;
+}
+
+/* PHÂN TRANG (ĐÃ CHỈNH SỬA CHO ĐẸP VÀ CHUẨN DARK MODE) */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 25px;
+  padding: 16px 24px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+
+  .pagination-info {
+    color: var(--text-muted);
+    font-size: 14px;
+
+    b {
+      color: var(--text-main);
+      font-weight: 700;
+    }
+  }
+
+  .pagination-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    .btn-page {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+
+      &:hover:not(:disabled) {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(47, 128, 237, 0.25);
+        transform: translateY(-1px);
+      }
+
+      &:disabled,
+      &.disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        background: transparent;
+        box-shadow: none;
+        transform: none;
+      }
+    }
+
+    .page-current {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      padding: 0 8px;
+      letter-spacing: 0.5px;
+    }
+  }
+}
+
+/* FIX NÚT BẤM CHO DARK MODE */
+:root[data-theme='dark'] .pagination-container .btn-page {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+
+  &:hover:not(:disabled) {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+  }
+}
+
+/* ==========================================
+       8) FORM UTILITIES & NG-SELECT
+       ========================================== */
+.form-card {
+  background: var(--surface);
+  /* FIX DARK MODE: Thay white bằng var(--surface) */
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+
+  &.md-centered {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+.form-grid.single-col {
+  grid-template-columns: 1fr;
+}
+
+.flex-row {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+
+  .half-width {
+    margin-bottom: 0;
+    flex: 1;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .half-width {
+      margin-bottom: 15px;
+    }
+  }
+}
+
+.terms-cell {
+  max-width: 250px;
+
+  .link-more {
+    color: var(--primary);
+    font-size: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 5px;
+    transition: color 0.2s;
+
+    &:hover {
+      color: var(--info);
+    }
+  }
+}
+
+.truncated-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-line;
+}
+
+.expanded-text {
+  display: block;
+  white-space: pre-line;
+}
+
+/* NG-SELECT - FIX DARK MODE TẬN GỐC */
+.ng-select.ng-select-single .ng-select-container {
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  height: 44px !important;
+  font-family: inherit !important;
+  font-size: 15px !important;
+  box-shadow: none !important;
+  background-color: var(--bg) !important;
+  /* Dùng nền bg cho ô nhập */
+  color: var(--text-main) !important;
+  display: flex !important;
+  align-items: center !important;
+
+  .ng-select-focused & {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2) !important;
+  }
+}
+
+.ng-select .ng-select-container .ng-value-container {
+  align-items: center !important;
+  padding-left: 15px !important;
+}
+
+.ng-select .ng-select-container .ng-value-container .ng-input {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  padding-left: 15px !important;
+}
+
+/* FIX text màu đen ở dark mode của ng-select */
+.ng-select .ng-select-container .ng-value-container .ng-value .ng-value-label {
+  color: var(--text-main) !important;
+}
+
+.ng-dropdown-panel {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  box-shadow: var(--shadow-md) !important;
+  z-index: 999999 !important;
+
+  .ng-dropdown-panel-items .ng-option {
+    padding: 12px 15px !important;
+    border-bottom: 1px solid var(--border);
+    /* Thay #f4f7f6 bằng var(--border) */
+    background-color: var(--surface) !important;
+    color: var(--text-main) !important;
+
+    &.ng-option-marked {
+      background-color: rgba(47, 128, 237, 0.15) !important;
+      color: var(--primary) !important;
+      font-weight: 500;
+    }
+  }
+}
+
+/* ==========================================
+       9) MENU 3 CHẤM (DROPDOWN ACTION) 
+       ========================================== */
+.data-table {
+  td.actions {
+    position: relative;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0 10px !important;
+    width: 60px;
+    overflow: visible;
+  }
+
+  .btn-dots {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    font-size: 24px !important;
+    line-height: 1;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 0 auto;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: var(--bg);
+      /* FIX DARK MODE */
+      color: var(--primary);
+    }
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 10px;
+
+  min-width: 200px;
+  background-color: var(--surface) !important;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--border);
+  z-index: 9999;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  animation: slideInLeft 0.2s ease-out;
+
+  .dropdown-item {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-main);
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.2s;
+
+    &:hover {
+      background-color: var(--bg);
+      /* FIX DARK MODE */
+      color: var(--primary);
+    }
+
+    &.text-danger {
+      color: var(--danger);
+
+      &:hover {
+        background-color: rgba(239, 68, 68, 0.1);
+      }
+    }
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translate(15px, -50%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+}
+
+/* ==========================================
+       10) INVOICE PRINT AREA (ĐÃ FIX MÀU CHUẨN DARK MODE)
+       ========================================== */
+#invoice-print-area {
+  font-family: inherit;
+  padding: 30px 40px;
+  background: var(--surface);
+  color: var(--text-main);
+  /* Thêm dòng này */
+
+  .invoice-title {
+    text-align: center;
+    border-bottom: 2px solid var(--info);
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+
+    h1 {
+      color: var(--info);
+      margin: 0;
+      text-transform: uppercase;
+      font-size: 28px;
+      letter-spacing: 1px;
+    }
+
+    p {
+      margin: 8px 0 0 0;
+      color: var(--text-muted);
+      /* FIX DARK MODE */
+      font-size: 15px;
+    }
+
+    strong {
+      color: var(--danger);
+    }
+  }
+
+  .invoice-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 22px;
+    line-height: 1.6;
+    font-size: 15px;
+    color: var(--text-main);
+
+    /* FIX DARK MODE */
+    p {
+      margin: 4px 0;
+    }
+  }
+
+  .invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 22px;
+    font-size: 15px;
+
+    th {
+      background: var(--bg);
+      /* FIX DARK MODE */
+      color: var(--text-main);
+      font-weight: 800;
+      padding: 12px;
+      border: 1px solid var(--border);
+    }
+
+    td {
+      padding: 12px;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      /* FIX DARK MODE */
+    }
+
+    tfoot {
+      td {
+        font-size: 15px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        color: var(--text-main);
+        /* FIX DARK MODE */
+      }
+
+      .total-price {
+        font-size: 18px;
+        color: var(--text-main);
+      }
+
+      .final-price {
+        font-size: 20px;
+        color: var(--danger);
+      }
+    }
+  }
+
+  .qr-guide-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    border: 2px dashed var(--border);
+    /* FIX DARK MODE */
+    padding: 22px;
+    border-radius: 16px;
+    background: var(--bg);
+    /* FIX DARK MODE */
+    margin-top: 26px;
+
+    .guide-text {
+      flex: 1;
+      padding-right: 10px;
+      color: var(--text-main);
+      /* FIX DARK MODE */
+
+      h4 {
+        margin: 0 0 10px 0;
+        color: var(--info);
+        text-transform: uppercase;
+        font-size: 16px;
+      }
+
+      p {
+        margin: 6px 0;
+        font-size: 15px;
+      }
+
+      .account-no {
+        font-size: 18px;
+        color: var(--text-main);
+      }
+
+      .amount-req {
+        font-size: 18px;
+        color: var(--danger);
+      }
+
+      .transfer-code {
+        background: rgba(245, 158, 11, 0.2);
+        /* Làm nhẹ nền đi 1 chút */
+        padding: 3px 8px;
+        border-radius: 8px;
+        color: var(--text-main);
+        /* Đổi màu chữ thay vì #0f172a */
+        letter-spacing: 1px;
+        font-weight: 800;
+      }
+
+      .guide-note {
+        margin-top: 12px;
+        color: var(--text-muted);
+        font-size: 13px;
+        font-style: italic;
+      }
+    }
+
+    .qr-image {
+      text-align: center;
+
+      img {
+        width: 180px;
+        height: 180px;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        background: #fff;
+        /* QR Bắt buộc phải nền trắng để quét được */
+        padding: 6px;
+        border: 1px solid var(--border);
+      }
+
+      p {
+        margin: 8px 0 0 0;
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 800;
+      }
+    }
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      text-align: center;
+      gap: 16px;
+
+      .guide-text {
+        padding-right: 0;
+      }
+    }
+  }
+
+  .thank-you-box {
+    margin-top: 26px;
+    text-align: center;
+    padding: 20px;
+    background: rgba(22, 163, 74, 0.1);
+    border-radius: 14px;
+    color: var(--success);
+    border: 1px solid rgba(22, 163, 74, 0.15);
+
+    h3 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 15px;
+      color: var(--text-main);
+      /* FIX DARK MODE */
+    }
+  }
+}
+

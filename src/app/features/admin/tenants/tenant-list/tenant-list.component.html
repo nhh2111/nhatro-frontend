@@ -3,13 +3,11 @@
         <h2>Quản lý Khách Thuê</h2>
         <button class="btn-add" (click)="openAddModal()">+ Thêm Khách Mới</button>
     </div>
-    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Tìm theo Tên, SĐT, CCCD..."
-            style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
-        <button (click)="onSearch()"
-            style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
-            Tìm kiếm
-        </button>
+    
+    <!-- Đã đổi sang chuẩn filter-section -->
+    <div class="filter-section">
+        <input class="input" type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Tìm theo Tên, SĐT, CCCD...">
+        <button class="btn-info" (click)="onSearch()">Tìm kiếm</button>
     </div>
 
     <div class="loading-msg" *ngIf="isLoading">Đang tải dữ liệu...</div>
@@ -20,63 +18,80 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Hình Ảnh</th>
-                        <th>Họ Tên</th>
-                        <th>SĐT</th>
-                        <th>CCCD/CMND</th>
-                        <th>Biển Số Xe</th>
-                        <th>Quê Quán</th>
-                        <th>Hành Động</th>
+                        <th style="width: 35%;">Hồ sơ Khách thuê</th>
+                        <th style="width: 30%;">Thông tin cá nhân</th>
+                        <th style="width: 25%;">Phương tiện</th>
+                        <th style="width: 10%; text-align: center;">Hành Động</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let tenant of tenantList">
-                        <td>#{{ tenant.id }}</td>
                         <td>
-                            <!-- THÊM HIỂN THỊ ẢNH CCCD/CHÂN DUNG VÀO BẢNG -->
-                            <img *ngIf="tenant.image_url" [src]="uploadService.formatImageUrl(tenant.image_url)" 
-                                 style="width: 45px; height: 45px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
-                            <span *ngIf="!tenant.image_url" style="color: #bdc3c7; font-size: 12px;">Trống</span>
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <img *ngIf="tenant.image_url" [src]="uploadService.formatImageUrl(tenant.image_url)"
+                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);">
+                                <!-- Đổi màu ô avatar trống -->
+                                <div *ngIf="!tenant.image_url"
+                                    style="width: 50px; height: 50px; background: var(--bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 12px; border: 1px dashed var(--border);">
+                                    Trống</div>
+
+                                <div>
+                                    <div class="fw-bold" style="font-size: 16px; color: var(--text-main);">{{ tenant.full_name }}</div>
+                                    <div style="color: var(--primary); font-weight: 600; font-size: 14px; margin-top: 3px;">
+                                        {{ tenant.phone }}</div>
+                                </div>
+                            </div>
                         </td>
-                        <td class="fw-bold">{{ tenant.full_name }}</td>
-                        <td style="color: #2980b9; font-weight: 600;">{{ tenant.phone }}</td>
-                        <td class="fw-bold">{{ tenant.cccd }}</td>
+
                         <td>
-                            <span *ngIf="tenant.vehicle_type === 'MOTORBIKE'"
-                                style="font-size: 12px; color: #e67e22;">(Xe máy)</span>
-                            <span *ngIf="tenant.vehicle_type === 'CAR'" style="font-size: 12px; color: #27ae60;">(Ô tô)</span>
-                            {{ tenant.license_plates || '---' }}
+                            <div class="fw-bold" style="font-size: 14px;">CCCD: {{ tenant.cccd }}</div>
+                            <div style="color: var(--text-muted); font-size: 13px; margin-top: 5px;">{{ tenant.address || 'Chưa cập nhật địa chỉ' }}</div>
                         </td>
-                        <td>{{ tenant.address || '---' }}</td>
+
+                        <td>
+                            <div *ngIf="tenant.motorbike_count > 0 || tenant.car_count > 0">
+                                <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                    <span *ngIf="tenant.motorbike_count > 0" class="badge badge-warning" style="font-size: 12px;">
+                                        {{ tenant.motorbike_count }} Xe máy
+                                    </span>
+                                    <span *ngIf="tenant.car_count > 0" class="badge badge-success" style="font-size: 12px;">
+                                        {{ tenant.car_count }} Ô tô
+                                    </span>
+                                </div>
+                                <div style="font-weight: bold; font-size: 14px; margin-top: 5px; color: var(--text-main);">
+                                    {{ tenant.license_plates || 'Chưa cập nhật biển số' }}
+                                </div>
+                            </div>
+
+                            <div *ngIf="!tenant.motorbike_count && !tenant.car_count" style="color: var(--text-muted); font-style: italic;">
+                                Không có phương tiện
+                            </div>
+                        </td>
+
                         <td class="actions">
-                            <button class="btn-edit" (click)="openEditModal(tenant)">Sửa</button>
-                            <button *ngIf="userRole === 'OWNER'" class="btn-delete"
-                                (click)="deleteTenant(tenant.id)">Xóa</button>
+                            <button class="btn-dots" (click)="toggleDropdown(tenant.id, $event)">⋮</button>
+                            <div class="dropdown-menu" *ngIf="activeDropdownId === tenant.id">
+                                <button class="dropdown-item" (click)="openEditModal(tenant)">Xem/Sửa hồ sơ</button>
+                                <button class="dropdown-item text-danger" *ngIf="userRole === 'OWNER'" (click)="deleteTenant(tenant.id)">Xóa khách</button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
-    <div *ngIf="totalPages > 0"
-        style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-        <div style="color: #7f8c8d; font-size: 14px;">
+    
+    <!-- Đã thay thế thanh phân trang chuẩn -->
+    <div class="pagination-container" *ngIf="totalPages > 0">
+        <div class="pagination-info">
             Hiển thị <b>{{ tenantList.length }}</b> / Tổng <b>{{ totalRecords }}</b> khách thuê
         </div>
-
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
-                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-                [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+        <div class="pagination-controls">
+            <button class="btn-page" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" [class.disabled]="currentPage === 1">
                 ❮ Trước
             </button>
-
-            <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
-
-            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
-                style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-                [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+            <span class="page-current">Trang {{ currentPage }} / {{ totalPages }}</span>
+            <button class="btn-page" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" [class.disabled]="currentPage === totalPages">
                 Sau ❯
             </button>
         </div>
@@ -94,26 +109,26 @@
             <button class="btn-close" (click)="closeModal()">×</button>
         </div>
 
-        <!-- BỎ (ngSubmit) VÀ DÙNG NGAY Ở BUTTON ĐỂ CHẶN LỖI SUBMIT -->
         <form [formGroup]="tenantForm">
             <div class="form-grid">
-                
-                <!-- GIAO DIỆN UPLOAD ẢNH CÁ NHÂN -->
+
+                <!-- GIAO DIỆN UPLOAD ẢNH CÁ NHÂN (Fix màu nền tối) -->
                 <div class="form-group full-width" style="text-align: center; margin-bottom: 15px;">
                     <div style="position: relative; display: inline-block;">
-                        <img [src]="previewImageUrl || 'assets/default-avatar.png'" 
-                             style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px dashed #bdc3c7; background-color: #f9f9f9;">
-                        
+                        <img [src]="previewImageUrl || 'assets/default-avatar.png'"
+                            style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px dashed var(--border); background-color: var(--bg);">
+
                         <button *ngIf="previewImageUrl" type="button" (click)="removeSelectedImage()"
-                                style="position: absolute; top: -10px; right: -10px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">
+                            style="position: absolute; top: -10px; right: -10px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">
                             ×
                         </button>
                     </div>
                     <div style="margin-top: 10px;">
-                        <input type="file" id="tenantImageUpload" accept="image/*" style="display: none;" (change)="onImageSelected($event)">
+                        <input type="file" id="tenantImageUpload" accept="image/*" style="display: none;"
+                            (change)="onImageSelected($event)">
                         <button type="button" onclick="document.getElementById('tenantImageUpload').click()"
-                            style="padding: 8px 15px; background: #ecf0f1; border: 1px solid #bdc3c7; border-radius: 5px; cursor: pointer; color: #2c3e50; font-weight: 500;">
-                            📷 Chọn ảnh CCCD/Chân dung
+                            style="padding: 8px 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 5px; cursor: pointer; color: var(--text-main); font-weight: 500;">
+                            Chọn ảnh CCCD/Chân dung
                         </button>
                     </div>
                 </div>

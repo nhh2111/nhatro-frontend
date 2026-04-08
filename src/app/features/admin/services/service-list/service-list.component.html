@@ -4,13 +4,10 @@
     <button *ngIf="userRole === 'OWNER'" class="btn-add" (click)="openAddModal()">+ Thêm Dịch Vụ</button>
   </div>
 
-  <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
-    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Tìm theo tên dịch vụ..."
-      style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
-    <button (click)="onSearch()"
-      style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
-      Tìm kiếm
-    </button>
+  <!-- Đã thay thế inline style bằng class filter-section và input chuẩn -->
+  <div class="filter-section">
+    <input class="input" type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Tìm theo tên dịch vụ...">
+    <button class="btn-info" (click)="onSearch()">Tìm kiếm</button>
   </div>
 
   <div class="loading-msg" *ngIf="isLoading">Đang tải dữ liệu...</div>
@@ -21,19 +18,21 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Tên Dịch Vụ</th>
-            <th>Loại Dịch Vụ</th>
-            <th>Đơn Giá</th>
-            <th>Đơn Vị Tính</th>
-            <th>Mô Tả</th>
-            <th *ngIf="userRole === 'OWNER'">Hành Động</th>
+            <th style="width: 35%;">Dịch Vụ & Mô tả</th>
+            <th style="width: 25%;">Loại Dịch Vụ</th>
+            <th style="width: 30%;">Đơn Giá / Đơn vị</th>
+            <th style="width: 10%; text-align: center;">Hành Động</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let srv of serviceList">
-            <td>#{{ srv.id }}</td>
-            <td class="fw-bold">{{ srv.name }}</td>
+            <td>
+              <div class="fw-bold" style="font-size: 16px; color: var(--info);">{{ srv.name }}</div>
+              <!-- Đổi màu chữ sang biến var(--text-muted) -->
+              <div *ngIf="srv.description" style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">
+                {{ srv.description }}
+              </div>
+            </td>
 
             <td>
               <span class="badge" [ngClass]="getServiceTypeClass(srv.service_type)">
@@ -41,36 +40,37 @@
               </span>
             </td>
 
-            <td class="price">{{ srv.unit_price | number:'1.0-0' }} đ</td>
-            <td>{{ srv.unit }}</td>
-            <td>{{ srv.description || '---' }}</td>
+            <td>
+              <div style="font-weight: bold; font-size: 16px; color: var(--text-main);">
+                {{ srv.unit_price | number:'1.0-0' }} đ
+                <span style="color: var(--text-muted); font-size: 14px; font-weight: normal;"> / {{ srv.unit }}</span>
+              </div>
+            </td>
+
             <td class="actions">
-              <button *ngIf="userRole === 'OWNER'" class="btn-edit" (click)="openEditModal(srv)">Sửa</button>
-              <button *ngIf="userRole === 'OWNER'" class="btn-delete" (click)="deleteService(srv.id)">Xóa</button>
+              <button class="btn-dots" (click)="toggleDropdown(srv.id, $event)">⋮</button>
+              <div class="dropdown-menu" *ngIf="activeDropdownId === srv.id">
+                <button class="dropdown-item" *ngIf="userRole === 'OWNER'" (click)="openEditModal(srv)">Sửa dịch vụ</button>
+                <button class="dropdown-item text-danger" *ngIf="userRole === 'OWNER'" (click)="deleteService(srv.id)">Xóa dịch vụ</button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div *ngIf="totalPages > 0"
-      style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
-      <div style="color: #7f8c8d; font-size: 14px;">
+    <!-- Đã thay thế inline style bằng class pagination-container chuẩn -->
+    <div class="pagination-container" *ngIf="totalPages > 0">
+      <div class="pagination-info">
         Hiển thị <b>{{ serviceList.length }}</b> / Tổng <b>{{ totalRecords }}</b> dịch vụ
       </div>
 
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+      <div class="pagination-controls">
+        <button class="btn-page" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" [class.disabled]="currentPage === 1">
           ❮ Trước
         </button>
-
-        <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
-
-        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+        <span class="page-current">Trang {{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn-page" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" [class.disabled]="currentPage === totalPages">
           Sau ❯
         </button>
       </div>

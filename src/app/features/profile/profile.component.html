@@ -3,48 +3,64 @@
     <h2>Thông tin cá nhân</h2>
   </div>
 
-  <div class="profile-card" style="margin-bottom: 20px;">
-    <div class="profile-avatar-section">
-      <div class="avatar-wrapper">
-        <img [src]="previewAvatar || profileForm.get('avatar')?.value || defaultAvatar" alt="Avatar" class="avatar-img-large">
-        <div class="upload-btn-wrapper">
-          <button type="button" class="btn-upload">📷 Tải ảnh</button>
-          <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+  <!-- Nới rộng khung lên 700px và tăng khoảng cách lề (padding) cho thoáng -->
+  <div class="form-card" style="max-width: 700px; margin: 0 auto 30px auto; padding: 40px; text-align: center;">
+    
+    <!-- KHU VỰC ẢNH ĐẠI DIỆN -->
+    <div class="profile-avatar-section" style="margin-bottom: 40px;">
+      <div class="avatar-wrapper" style="position: relative; display: inline-block; margin-bottom: 15px;">
+        <img [src]="previewAvatar || profileForm.get('avatar')?.value || defaultAvatar" alt="Avatar" style="width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 4px solid var(--border); box-shadow: var(--shadow-sm);">
+        
+        <div class="upload-btn-wrapper" style="position: absolute; bottom: 5px; right: -5px;">
+          <button type="button" class="btn" style="background: var(--surface); border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-main); box-shadow: var(--shadow-sm);" onclick="document.getElementById('avatarUpload').click()">📷</button>
+          <input id="avatarUpload" type="file" (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
         </div>
       </div>
-      <h3>{{ profileForm.get('full_name')?.value || 'Đang tải...' }}</h3>
-      <p>Chức vụ: <span class="badge badge-info">{{ profileForm.get('role')?.value === 'OWNER' ? 'Chủ trọ' : 'Nhân viên' }}</span></p>
+      <h3 style="margin: 0; color: var(--text-main); font-size: 22px;">{{ profileForm.get('full_name')?.value || 'Đang tải...' }}</h3>
+      <p style="margin: 8px 0 0 0; color: var(--text-muted); font-size: 15px;">
+        Chức vụ: <span class="badge badge-info" style="font-size: 13px;">{{ profileForm.get('role')?.value === 'OWNER' ? 'Chủ trọ' : 'Nhân viên' }}</span>
+      </p>
     </div>
 
-    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
-      <div class="form-grid">
+    <!-- KHU VỰC FORM THÔNG TIN -->
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" style="text-align: left;">
+      <!-- Tăng gap lên 24px để các hàng không bị dính sát vào nhau -->
+      <div class="form-grid" style="gap: 24px;">
+        
         <div class="form-group full-width">
           <label>Họ và tên (*)</label>
           <input type="text" formControlName="full_name">
         </div>
+        
         <div class="form-group">
           <label>Số điện thoại</label>
           <input type="text" formControlName="phone">
         </div>
+        
         <div class="form-group">
           <label>Số CCCD / CMND</label>
           <input type="text" formControlName="cccd">
         </div>
-        <div class="form-group">
+        
+        <!-- Để Email trải dài toàn màn hình cho đẹp và dễ đọc -->
+        <div class="form-group full-width">
           <label>Email đăng nhập</label>
-          <input type="email" formControlName="email" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
+          <input type="email" formControlName="email" readonly>
         </div>
-        <div class="form-group">
+        
+        <!-- Để Quyền hạn trải dài toàn màn hình -->
+        <div class="form-group full-width">
           <label>Quyền hạn hệ thống</label>
-          <input type="text" formControlName="role" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
+          <input type="text" formControlName="role" readonly>
         </div>
+
       </div>
 
-      <div class="form-actions" style="display: flex; gap: 15px; justify-content: center;">
-        <button type="submit" class="btn-save" [disabled]="profileForm.invalid || isLoading">
+      <div class="form-actions" style="justify-content: center; margin-top: 40px; padding-top: 25px; border-top: 1px solid var(--border);">
+        <button type="submit" class="btn-info" [disabled]="profileForm.invalid || isLoading" style="padding: 12px 28px; font-size: 15px;">
           {{ isLoading ? 'Đang lưu...' : 'Cập nhật thông tin' }}
         </button>
-        <button type="button" class="btn-warning" (click)="openPasswordModal()">
+        <button type="button" class="btn" style="background-color: var(--warning); color: #fff; padding: 12px 28px; font-size: 15px;" (click)="openPasswordModal()">
           Đổi mật khẩu
         </button>
       </div>
@@ -52,18 +68,19 @@
   </div>
 </div>
 
+<!-- MODAL ĐỔI MẬT KHẨU -->
 <div class="modal-overlay" *ngIf="showPasswordModal">
   <div class="modal-content" style="max-width: 500px;">
     <div class="modal-header">
       <div>
-        <h3 style="margin: 0; color: #2c3e50;">Đổi Mật Khẩu</h3>
-        <p style="margin: 5px 0 0 0; color: #7f8c8d; font-size: 13px;">Bảo mật tài khoản bằng mật khẩu mạnh</p>
+        <h3 style="margin: 0; color: var(--text-main);">Đổi Mật Khẩu</h3>
+        <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 13px;">Bảo mật tài khoản bằng mật khẩu mạnh</p>
       </div>
       <button class="btn-close" (click)="closePasswordModal()">×</button>
     </div>
 
     <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
-      <div class="form-grid" style="grid-template-columns: 1fr; padding-bottom: 0;">
+      <div class="form-grid" style="grid-template-columns: 1fr; gap: 20px; padding-bottom: 0;">
         <div class="form-group">
           <label>Mật khẩu hiện tại (*)</label>
           <input type="password" formControlName="old_password" placeholder="Nhập mật khẩu đang dùng">
@@ -80,7 +97,7 @@
 
       <div class="modal-footer">
         <button type="button" class="btn-cancel" (click)="closePasswordModal()">Hủy</button>
-        <button type="submit" class="btn-save" style="background-color: var(--warning);" [disabled]="passwordForm.invalid || isChangingPassword">
+        <button type="submit" class="btn" style="background-color: var(--warning); color: #fff;" [disabled]="passwordForm.invalid || isChangingPassword">
           {{ isChangingPassword ? 'Đang xử lý...' : 'Xác nhận đổi' }}
         </button>
       </div>

@@ -8,12 +8,12 @@
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label>Email đăng nhập</label>
-        <input type="email" formControlName="email" placeholder="Nhập email của bạn">
+        <input type="email" formControlName="email" placeholder="Nhập email của bạn" class="input">
       </div>
 
       <div class="form-group">
         <label>Mật khẩu</label>
-        <input type="password" formControlName="password" placeholder="Nhập mật khẩu">
+        <input type="password" formControlName="password" placeholder="Nhập mật khẩu" class="input">
       </div>
 
       <button type="submit" class="btn-login" [disabled]="loginForm.invalid || isLoading">

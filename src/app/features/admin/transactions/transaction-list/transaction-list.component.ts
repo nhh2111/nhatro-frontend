@@ -24,7 +24,7 @@ export class TransactionListComponent implements OnInit {
   netProfit: number = 0;
 
   currentPage: number = 1;
-  pageSize: number = 50; // Tăng lên 50 để xem báo cáo trong tháng cho dễ
+  pageSize: number = 50;
   totalRecords: number = 0;
   totalPages: number = 0;
 

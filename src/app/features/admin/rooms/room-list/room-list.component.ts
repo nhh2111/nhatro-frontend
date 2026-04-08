@@ -1,11 +1,11 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormsModule, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router'; // BỔ SUNG: Dùng để đọc tham số URL
+import { ActivatedRoute } from '@angular/router';
 import { RoomService } from '../../../../services/room.service';
 import { HouseService } from '../../../../services/house.service';
 import { ServiceService } from '../../../../services/service.service';
-import { ContractService } from '../../../../services/contract.service'; 
+import { ContractService } from '../../../../services/contract.service';
 import { AuthService } from '../../../../services/auth.service';
 import { UploadService } from '../../../../services/upload.service';
 
@@ -22,9 +22,9 @@ export class RoomListComponent implements OnInit {
   private houseService = inject(HouseService);
   private platformId = inject(PLATFORM_ID);
   private srvService = inject(ServiceService);
-  private contractService = inject(ContractService); 
+  private contractService = inject(ContractService);
   private authService = inject(AuthService);
-  private route = inject(ActivatedRoute); 
+  private route = inject(ActivatedRoute);
   public uploadService = inject(UploadService);
 
   houseIdFilter: string = '';
@@ -40,12 +40,12 @@ export class RoomListComponent implements OnInit {
   showServiceModal: boolean = false;
   selectedRoomIdForService?: number;
   selectedServiceIds: number[] = [];
-  isSavingServices: boolean = false; 
+  isSavingServices: boolean = false;
 
   houseList: any[] = [];
-  roomList: any[] = []; 
+  roomList: any[] = [];
   isLoading: boolean = false;
-  isSaving: boolean = false; 
+  isSaving: boolean = false;
   errorMessage: string = '';
 
   showModal: boolean = false;
@@ -83,8 +83,8 @@ export class RoomListComponent implements OnInit {
 
       this.route.queryParams.subscribe(params => {
         if (params['house_id']) {
-          this.houseIdFilter = params['house_id']; 
-          this.searchQuery = ''; 
+          this.houseIdFilter = params['house_id'];
+          this.searchQuery = '';
         } else {
           this.houseIdFilter = '';
         }
@@ -108,7 +108,7 @@ export class RoomListComponent implements OnInit {
     this.houseService.getAllHouses(1, 100, '').subscribe({
       next: (res) => {
         if (res.errorCode === 200) {
-          this.houseList = res.result.records; 
+          this.houseList = res.result.records;
         }
       },
       error: (err) => console.error('Lỗi tải danh sách nhà:', err)
@@ -119,14 +119,14 @@ export class RoomListComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     this.roomService.getAllRooms(this.currentPage, this.pageSize, this.searchQuery, this.houseIdFilter).subscribe({
-      next: (res) => { 
+      next: (res) => {
         if (res.errorCode === 200) {
-          this.roomList = res.result.records; 
+          this.roomList = res.result.records;
           this.totalRecords = res.result.recordCount;
           this.totalPages = res.result.pageCount;
           this.currentPage = res.result.currentPage;
         }
-        this.isLoading = false; 
+        this.isLoading = false;
       },
       error: (err) => {
         this.errorMessage = 'Lỗi tải dữ liệu: ' + (err.error?.errorMessage || err.message);
@@ -175,13 +175,13 @@ export class RoomListComponent implements OnInit {
     this.isEditMode = true;
     this.currentRoomId = room.id;
     this.roomForm.patchValue(room);
-  
+
     if (room.images) {
       this.previewImages = room.images.split(',');
     } else {
       this.previewImages = [];
     }
-    
+
     this.showModal = true;
   }
 
@@ -212,7 +212,7 @@ export class RoomListComponent implements OnInit {
 
   removeImage(index: number, imgUrl: string): void {
     if (imgUrl.startsWith('/uploads')) {
-        this.uploadService.deleteImage('rooms', imgUrl).subscribe();
+      this.uploadService.deleteImage('rooms', imgUrl).subscribe();
     }
 
     this.previewImages.splice(index, 1);
@@ -237,7 +237,6 @@ export class RoomListComponent implements OnInit {
     this.handleCreateRoom(roomData);
   }
 
-  // TÁCH HÀM: Định dạng dữ liệu trước khi gửi
   private formatRoomData(rawValue: any): any {
     return {
       ...rawValue,
@@ -250,7 +249,6 @@ export class RoomListComponent implements OnInit {
     };
   }
 
-  // TÁCH HÀM: Chuyên xử lý Cập nhật
   private handleUpdateRoom(roomData: any): void {
     this.roomService.updateRoom(this.currentRoomId!, roomData).subscribe({
       next: () => {
@@ -260,13 +258,13 @@ export class RoomListComponent implements OnInit {
         this.loadRooms();
       },
       error: (err) => {
+        const thongBaoLoi = err.error?.error || "Có lỗi xảy ra khi cập nhật!";
+        alert(thongBaoLoi);
         this.isSaving = false;
-        alert('Lỗi cập nhật: ' + (err.error?.detail || err.error?.message || err.message));
       }
     });
   }
 
-  // TÁCH HÀM: Chuyên xử lý Thêm mới
   private handleCreateRoom(roomData: any): void {
     this.roomService.createRoom(roomData).subscribe({
       next: () => {
@@ -285,13 +283,13 @@ export class RoomListComponent implements OnInit {
   openServiceModal(roomId: number | undefined): void {
     if (!roomId) return;
     this.selectedRoomIdForService = roomId;
-    this.selectedServiceIds = []; 
+    this.selectedServiceIds = [];
     this.showServiceModal = true;
 
     this.roomService.getRoomServices(roomId).subscribe({
       next: (res) => {
         if (res.errorCode === 200 && res.result) {
-          this.selectedServiceIds = res.result; 
+          this.selectedServiceIds = res.result;
         }
       },
       error: () => alert('Lỗi tải dịch vụ của phòng này')
@@ -313,7 +311,7 @@ export class RoomListComponent implements OnInit {
 
   saveRoomServices(): void {
     if (!this.selectedRoomIdForService) return;
-    
+
     this.isSavingServices = true;
     this.roomService.assignServicesToRoom(this.selectedRoomIdForService, this.selectedServiceIds).subscribe({
       next: () => {
@@ -330,8 +328,8 @@ export class RoomListComponent implements OnInit {
 
   getFirstImage(imageString: string): string {
     if (!imageString) return '';
-    const firstImg = imageString.split(',')[0]; 
-    return this.uploadService.formatImageUrl(firstImg); 
+    const firstImg = imageString.split(',')[0];
+    return this.uploadService.formatImageUrl(firstImg);
   }
 
   getImageCount(imageString: string): number {
@@ -339,14 +337,13 @@ export class RoomListComponent implements OnInit {
     return imageString.split(',').length;
   }
 
-  // KHU VỰC QUẢN LÝ GALLERY (XEM ẢNH PHÓNG TO)
   showGalleryModal: boolean = false;
   galleryImages: string[] = [];
   currentGalleryIndex: number = 0;
 
   openGallery(imageString: string): void {
     if (!imageString) return;
-    
+
     this.galleryImages = imageString.split(',').map(img => this.uploadService.formatImageUrl(img));
     this.currentGalleryIndex = 0;
     this.showGalleryModal = true;
@@ -361,7 +358,7 @@ export class RoomListComponent implements OnInit {
     if (this.currentGalleryIndex < this.galleryImages.length - 1) {
       this.currentGalleryIndex++;
     } else {
-      this.currentGalleryIndex = 0; 
+      this.currentGalleryIndex = 0;
     }
   }
 
@@ -371,5 +368,15 @@ export class RoomListComponent implements OnInit {
     } else {
       this.currentGalleryIndex = this.galleryImages.length - 1;
     }
+  }
+
+  activeDropdownId: number | null = null;
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside() { this.activeDropdownId = null; }
+
+  toggleDropdown(id: number, event: Event) {
+    event.stopPropagation();
+    this.activeDropdownId = this.activeDropdownId === id ? null : id;
   }
 }

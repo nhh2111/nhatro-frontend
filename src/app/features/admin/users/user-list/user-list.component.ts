@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../../../services/user.service';
@@ -172,5 +172,16 @@ export class UserListComponent implements OnInit {
         alert('Lỗi thêm mới: ' + (err.error?.error || err.message));
       }
     });
+  }
+  activeDropdownId: number | null = null;
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside() {
+    this.activeDropdownId = null;
+  }
+
+  toggleDropdown(id: number, event: Event) {
+    event.stopPropagation();
+    this.activeDropdownId = this.activeDropdownId === id ? null : id;
   }
 }

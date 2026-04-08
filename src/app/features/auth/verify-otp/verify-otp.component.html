@@ -1,5 +1,6 @@
 <div class="login-wrapper">
-  <div class="login-card" style="max-width: 400px;">
+  <!-- Mặc định max-width của login-card ở style chung là 400px rồi nên không cần ép style nữa -->
+  <div class="login-card">
     <h2>Xác Thực Email</h2>
     <p class="subtitle">
       Vui lòng kiểm tra hộp thư <b>{{ userEmail }}</b> và nhập mã OTP 6 số để kích hoạt tài khoản.
@@ -11,7 +12,7 @@
       
       <div class="form-group">
         <label>Mã xác thực (OTP)</label>
-        <input type="text" formControlName="otp_code" placeholder="VD: 123456" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 5px; font-weight: bold;">
+        <input style="width: 93%;" type="text" formControlName="otp_code" placeholder="VD: 123456" maxlength="6" class="input otp-input">
       </div>
 
       <button type="submit" class="btn-login" [disabled]="otpForm.invalid || isLoading">

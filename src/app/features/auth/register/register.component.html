@@ -1,7 +1,7 @@
 <div class="login-wrapper">
-  <div class="login-card" style="max-width: 450px;">
+  <div class="login-card wide-card">
     <h2>Đăng Ký Chủ Trọ</h2>
-    <p class="subtitle">Bắt đầu quản lý hệ thống nhà trọ của bạn</p>
+    <p class="subtitle">Đăng ký để đầu hệ thống quản lý nhà trọ của bạn</p>
 
     <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
 
@@ -9,23 +9,23 @@
       
       <div class="form-group">
         <label>Họ và Tên</label>
-        <input type="text" formControlName="full_name" placeholder="VD: Nguyễn Văn A">
+        <input type="text" formControlName="full_name" placeholder="VD: Nguyễn Văn A" class="input">
       </div>
 
       <div class="form-group">
         <label>Email (Dùng để đăng nhập)</label>
-        <input type="email" formControlName="email" placeholder="Nhập địa chỉ email thật để nhận OTP">
+        <input type="email" formControlName="email" placeholder="Nhập địa chỉ email để nhận OTP" class="input">
       </div>
 
       <div class="form-group">
         <label>Mật khẩu</label>
-        <input type="password" formControlName="password" placeholder="Tối thiểu 6 ký tự">
+        <input type="password" formControlName="password" placeholder="Tối thiểu 8 ký tự, bao gồm chữ hoa, ký tự đặc biệt và số" class="input">
       </div>
 
       <div class="form-group">
         <label>Nhập lại mật khẩu</label>
-        <input type="password" formControlName="confirm_password" placeholder="Nhập lại mật khẩu ở trên">
-        <small style="color: #e74c3c; margin-top: 5px; display: block;" *ngIf="registerForm.errors?.['mismatch'] && registerForm.get('confirm_password')?.touched">
+        <input type="password" formControlName="confirm_password" placeholder="Nhập lại mật khẩu ở trên" class="input">
+        <small class="validation-error" *ngIf="registerForm.errors?.['mismatch'] && registerForm.get('confirm_password')?.touched">
           Mật khẩu nhập lại không khớp!
         </small>
       </div>

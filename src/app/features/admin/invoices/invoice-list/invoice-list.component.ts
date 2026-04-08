@@ -18,7 +18,7 @@ export class InvoiceListComponent implements OnInit {
   invoices: any[] = [];
   selectedMonth: string = new Date().toISOString().substring(0, 7); 
   isLoading: boolean = false;
-  isExporting: boolean = false; // Biến trạng thái khi đang xuất PDF
+  isExporting: boolean = false; 
 
   currentPage: number = 1;
   pageSize: number = 10;
@@ -132,21 +132,52 @@ export class InvoiceListComponent implements OnInit {
     const element = document.getElementById('invoice-print-area');
     if (element) {
       this.isExporting = true;
-      html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+
+      const originalOverflow = element.style.overflow;
+      const originalHeight = element.style.height;
+
+      element.style.overflow = 'visible';
+      element.style.height = 'max-content';
+
+      html2canvas(element, { 
+        scale: 2, 
+        useCORS: true,
+        scrollY: 0, 
+        windowHeight: element.scrollHeight 
+      }).then(canvas => {
+        element.style.overflow = originalOverflow;
+        element.style.height = originalHeight;
+
         const imgData = canvas.toDataURL('image/png');
-
         const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgWidth = 210; 
-        const imgHeight = canvas.height * imgWidth / canvas.width;
 
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        const imgWidth = 210; 
+        const pageHeight = 297; 
+        const imgHeight = canvas.height * imgWidth / canvas.width; 
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
         
         const fileName = `Hoa_Don_P${this.selectedInvoice?.Contract?.Room?.room_number}_${this.selectedInvoice?.month_year}.pdf`;
         pdf.save(fileName);
         
         this.isExporting = false;
       }).catch(err => {
+        console.error("Chi tiết lỗi PDF: ", err);
         alert("Lỗi khi tạo PDF!");
+        
+        element.style.overflow = originalOverflow;
+        element.style.height = originalHeight;
         this.isExporting = false;
       });
     }

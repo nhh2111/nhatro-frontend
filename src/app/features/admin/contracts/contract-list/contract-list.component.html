@@ -5,9 +5,9 @@
   </div>
 
   <div class="filter-section">
-    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+    <input class="input" type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
       placeholder="Tìm theo Số phòng, Tên khách...">
-    <button (click)="onSearch()">Tìm kiếm</button>
+    <button class="btn-info" (click)="onSearch()">Tìm kiếm</button>
   </div>
 
   <div class="loading-msg" *ngIf="isLoading">Đang tải dữ liệu...</div>
@@ -18,34 +18,42 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Mã HĐ</th>
-            <th>Khu Trọ</th>
-            <th>Phòng</th>
-            <th>Người Thuê</th>
-            <th>Ngày Bắt Đầu</th>
-            <th>Ngày Kết Thúc</th>
-            <th>Tiền Cọc</th>
-            <th>Điều Khoản</th>
-            <th>Trạng Thái</th>
-            <th>Hành Động</th>
+            <th style="width: 25%;">Hợp đồng & Phòng</th>
+            <th style="width: 20%;">Khách Đại Diện</th>
+            <th style="width: 25%;">Thời hạn & Tiền cọc</th>
+            <th style="width: 15%;">Trạng Thái</th>
+            <th style="width: 15%; text-align: center;">Hành Động</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let c of contractList">
-            <td>#{{ c.id }}</td>
-            <td class="fw-bold">{{ c.Room?.House?.name || '---' }}</td>
-            <td class="fw-bold">P.{{ c.Room?.room_number }}</td>
-            <td>{{ c.Tenant?.full_name }}</td>
-            <td>{{ c.start_date | date:'dd/MM/yyyy' }}</td>
-            <td>{{ c.end_date | date:'dd/MM/yyyy' }}</td>
-            <td class="price">{{ c.deposit_amount | number:'1.0-0' }} đ</td>
-            <td class="terms-cell">
-              <div [ngClass]="{'expanded-text': c.isExpanded, 'truncated-text': !c.isExpanded}">
-                {{ c.terms || 'Không có' }}
+            <td>
+              <div class="fw-bold" style="font-size: 16px; color: var(--info);">Mã HĐ: #{{ c.id }}</div>
+              <div style="font-weight: 500; color: #7f8c8d; margin-top: 3px;">
+                P.{{ c.Room?.room_number }} <span style="color: #7f8c8d; font-weight: normal;">- {{ c.Room?.House?.name || '---' }}</span>
               </div>
-              <a href="javascript:void(0)" class="link-more" *ngIf="c.terms && c.terms.length > 50" (click)="c.isExpanded = !c.isExpanded">
-                {{ c.isExpanded ? 'Thu gọn v' : 'Xem thêm...' }}
-              </a>
+
+              <div *ngIf="c.terms" style="font-size: 13px; color: #95a5a6; font-style: italic; border-left: 2px solid #eee; padding-left: 8px; margin-top: 8px;">
+                <div [ngClass]="{'expanded-text': c.isExpanded, 'truncated-text': !c.isExpanded}">
+                  {{ c.terms }}
+                </div>
+                <a href="javascript:void(0)" class="link-more" *ngIf="c.terms.length > 50" (click)="c.isExpanded = !c.isExpanded">
+                  {{ c.isExpanded ? 'Thu gọn ^' : 'Xem thêm...' }}
+                </a>
+              </div>
+            </td>
+
+            <td>
+              <div class="fw-bold" style="font-size: 15px;">{{ c.Tenant?.full_name }}</div>
+            </td>
+
+            <td>
+              <div style="font-size: 14px; color: #7f8c8d;">
+                {{ c.start_date | date:'dd/MM/yyyy' }} ➔ {{ c.end_date | date:'dd/MM/yyyy' }}
+              </div>
+              <div class="price" style="font-size: 14px; margin-top: 5px;">
+                Cọc: {{ c.deposit_amount | number:'1.0-0' }} đ
+              </div>
             </td>
             <td>
               <span class="badge" [ngClass]="c.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'">
@@ -53,7 +61,12 @@
               </span>
             </td>
             <td class="actions">
-              <button class="btn-delete" *ngIf="c.status === 'ACTIVE'" (click)="terminateContract(c.id)">Thanh lý</button>
+              <button class="btn-dots" (click)="toggleDropdown(c.id, $event)">⋮</button>
+              <div class="dropdown-menu" *ngIf="activeDropdownId === c.id">
+                <button class="dropdown-item" (click)="viewDetail(c)">In HĐ / Xuất PDF</button>
+                <div style="border-top: 1px solid #f0f0f0; margin: 4px 0;"></div>
+                <button class="dropdown-item text-danger" *ngIf="c.status === 'ACTIVE'" (click)="terminateContract(c.id)">Thanh lý HĐ</button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -65,13 +78,9 @@
         Hiển thị <b>{{ contractList.length }}</b> / Tổng <b>{{ totalRecords }}</b> hợp đồng
       </div>
       <div class="pagination-controls">
-        <button class="btn-page" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" [class.disabled]="currentPage === 1">
-          ❮ Trước
-        </button>
+        <button class="btn-page" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" [class.disabled]="currentPage === 1">❮ Trước</button>
         <span class="page-current">Trang {{ currentPage }} / {{ totalPages }}</span>
-        <button class="btn-page" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" [class.disabled]="currentPage === totalPages">
-          Sau ❯
-        </button>
+        <button class="btn-page" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" [class.disabled]="currentPage === totalPages">Sau ❯</button>
       </div>
     </div>
   </div>
@@ -80,6 +89,7 @@
     <p>Chưa có hợp đồng nào. Hãy tạo khách thuê và lập hợp đồng đầu tiên!</p>
   </div>
 </div>
+
 
 <div class="modal-overlay" *ngIf="showModal">
   <div class="modal-content md">
@@ -91,34 +101,31 @@
     <form [formGroup]="contractForm" (ngSubmit)="saveContract()">
       <div class="form-grid">
         <div class="form-group full-width">
-          <label>1. Chọn Khu Trọ / Tòa Nhà</label>
-          <select formControlName="house_id" (change)="onHouseChange()">
-            <option value="" disabled selected>-- Chọn khu trọ --</option>
-            <option *ngFor="let h of houseList" [value]="h.id">{{ h.name }}</option>
-          </select>
+          <label>1. Tìm và Chọn Khu Trọ</label>
+          <ng-select appendTo="body" formControlName="house_id" (change)="onHouseChange()" placeholder="-- Gõ để tìm khu trọ --" [notFoundText]="'Không tìm thấy'">
+            <ng-option  *ngFor="let h of houseList" [value]="h.id">{{ h.name }}</ng-option>
+          </ng-select>
         </div>
 
         <div class="form-group full-width">
-          <label>2. Chọn Phòng Đang Trống</label>
-          <select formControlName="room_id" [disabled]="!contractForm.value.house_id">
-            <option value="" disabled selected>-- Chọn phòng --</option>
-            <option *ngFor="let r of filteredAvailableRooms" [value]="r.id">
-              Phòng {{ r.room_number }} (Tầng {{ r.floor }} - {{ r.base_price | number }}đ)
-            </option>
-          </select>
+          <label>2. Tìm và Chọn Phòng Đang Trống</label>
+          <ng-select appendTo="body" formControlName="room_id" (change)="onRoomChange()" [disabled]="!contractForm.value.house_id" placeholder="-- Gõ để tìm phòng --" [notFoundText]="'Không tìm thấy phòng'">
+            <ng-option *ngFor="let r of filteredAvailableRooms" [value]="r.id">
+              Phòng {{ r.room_number }} (Tầng {{ r.floor }} - Giới hạn: {{ r.gender_restriction === 'MALE' ? 'Nam' : (r.gender_restriction === 'FEMALE' ? 'Nữ' : 'Tất cả') }})
+            </ng-option>
+          </ng-select>
           <small class="text-danger" *ngIf="contractForm.value.house_id && filteredAvailableRooms.length === 0">
             Khu trọ này đã hết phòng trống!
           </small>
         </div>
 
         <div class="form-group full-width">
-          <label>3. Chọn Khách Thuê (Đại diện)</label>
-          <select formControlName="tenant_id">
-            <option value="" disabled selected>-- Chọn khách --</option>
-            <option *ngFor="let t of tenantList" [value]="t.id">
+          <label>3. Tìm Khách Thuê (Đại diện)</label>
+          <ng-select appendTo="body" formControlName="tenant_id" placeholder="-- Gõ tên, sđt hoặc CCCD để tìm --" [notFoundText]="'Không tìm thấy khách thỏa mãn'">
+            <ng-option *ngFor="let t of filteredTenants" [value]="t.id">
               {{ t.full_name }} - {{ t.phone }} (CCCD: {{ t.cccd }})
-            </option>
-          </select>
+            </ng-option>
+          </ng-select>
         </div>
 
         <div class="form-group">
@@ -147,5 +154,68 @@
         <button type="submit" class="btn-save" [disabled]="contractForm.invalid">Lập Hợp Đồng</button>
       </div>
     </form>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="showDetailModal">
+  <div class="modal-content lg no-padding">
+      <div class="modal-header">
+          <h3>Chi Tiết Hợp Đồng Thuê Nhà</h3>
+          <button class="btn-close" (click)="closeDetailModal()">×</button>
+      </div>
+
+      <div id="contract-print-area" class="modal-body" style="padding: 40px; background: white; color: black; line-height: 1.6;">
+          <div style="text-align: center; margin-bottom: 30px;">
+              <h2>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h2>
+              <h4>Độc lập - Tự do - Hạnh phúc</h4>
+              <h1 style="margin-top: 20px; text-transform: uppercase;">Hợp Đồng Thuê Phòng Trọ</h1>
+              <p>Mã HĐ: <strong>#{{ selectedContract?.id }}</strong></p>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+              <h4>ĐẠI DIỆN BÊN CHO THUÊ (BÊN A):</h4>
+              <p>Ban quản lý Khu trọ: <strong>{{ selectedContract?.Room?.House?.name }}</strong></p>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+              <h4>ĐẠI DIỆN BÊN THUÊ (BÊN B):</h4>
+              <p>Ông/Bà: <strong>{{ selectedContract?.Tenant?.full_name }}</strong></p>
+              <p>CCCD/CMND: <strong>{{ selectedContract?.Tenant?.cccd }}</strong></p>
+              <p>Số điện thoại: <strong>{{ selectedContract?.Tenant?.phone }}</strong></p>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+              <h4>THỎA THUẬN THUÊ PHÒNG:</h4>
+              <p>1. Bên A đồng ý cho Bên B thuê phòng số: <strong>{{ selectedContract?.Room?.room_number }}</strong></p>
+              <p>2. Giá thuê cơ bản: <strong>{{ selectedContract?.Room?.base_price | number }} VNĐ/Tháng</strong></p>
+              <p>3. Thời hạn thuê từ ngày <strong>{{ selectedContract?.start_date | date:'dd/MM/yyyy' }}</strong> đến ngày <strong>{{ selectedContract?.end_date | date:'dd/MM/yyyy' }}</strong></p>
+              <p>4. Tiền đặt cọc giữ phòng: <strong>{{ selectedContract?.deposit_amount | number }} VNĐ</strong></p>
+          </div>
+
+          <div style="margin-bottom: 40px;">
+              <h4>ĐIỀU KHOẢN BỔ SUNG:</h4>
+              <p style="white-space: pre-wrap;">{{ selectedContract?.terms || 'Không có điều khoản bổ sung.' }}</p>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; margin-top: 50px; text-align: center;">
+              <div>
+                  <h4>ĐẠI DIỆN BÊN A</h4>
+                  <p><i>(Ký và ghi rõ họ tên)</i></p>
+              </div>
+              <div>
+                  <h4>ĐẠI DIỆN BÊN B</h4>
+                  <p><i>(Ký và ghi rõ họ tên)</i></p>
+              </div>
+          </div>
+      </div> 
+
+      <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeDetailModal()">Đóng</button>
+          <button class="btn-save btn-export" (click)="exportPDF()" [disabled]="isExporting">
+              <span *ngIf="!isExporting">Tải Hợp Đồng (PDF)</span>
+              <span *ngIf="isExporting">Đang tạo PDF...</span>
+          </button>
+      </div>
   </div>
 </div>

@@ -4,13 +4,10 @@
     <button *ngIf="userRole === 'OWNER'" class="btn-add" (click)="openAddModal()">+ Thêm Khu Trọ</button>
   </div>
 
-  <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
-    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Tìm theo tên nhà, địa chỉ..."
-      style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
-    <button (click)="onSearch()"
-      style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
-      Tìm kiếm
-    </button>
+  <div class="filter-section">
+    <input class="input" type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+      placeholder="Tìm theo tên nhà, địa chỉ...">
+    <button class="btn-info" (click)="onSearch()">Tìm kiếm</button>
   </div>
 
   <div class="loading-msg" *ngIf="isLoading">Đang tải dữ liệu...</div>
@@ -21,68 +18,58 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Tên Khu Trọ</th>
-            <th style="text-align: center;">Tổng Phòng</th>
-            <th style="text-align: center;">Phòng Trống</th>
-            <th>Hình Ảnh</th> <th>Địa chỉ chi tiết</th>
-            <th>Phường/Xã</th>
-            <th>Quận/Huyện</th>
-            <th>Tỉnh/Thành</th>
-            <th>Hành Động</th>
+            <th>Khu Trọ / Tòa Nhà</th>
+            <th style="text-align: center;">Tình trạng phòng</th>
+            <th>Địa chỉ đầy đủ</th>
+            <th style="text-align: right; padding-right: 30px;">Hành Động</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let house of houseList">
-            <td class="fw-bold">{{ house.name }}</td>
-            <td style="text-align: center; font-weight: bold;">{{ house.total_rooms }}</td>
-            <td style="text-align: center;">
-              <span class="badge" [ngClass]="house.empty_rooms > 0 ? 'badge-success' : 'badge-danger'">
-                {{ house.empty_rooms > 0 ? 'Còn ' + house.empty_rooms + ' phòng' : 'Đã kín' }}
-              </span>
+            <td>
+              <div class="fw-bold" style="font-size: 16px;">{{ house.name }}</div>
             </td>
+
+            <td style="text-align: center;">
+              <span class="badge" [ngClass]="house.empty_rooms > 0 ? 'badge-success' : 'badge-danger'" style="font-size: 13px;">
+                {{ house.empty_rooms > 0 ? 'Còn ' + house.empty_rooms + ' phòng trống' : 'Đã kín phòng' }}
+              </span>
+              <div style="font-size: 13px; color: #7f8c8d; margin-top: 5px;">Tổng cộng: <b>{{ house.total_rooms }}</b> phòng</div>
 
             <td>
-                <button *ngIf="house.images" class="btn-info" (click)="openGallery(house.images)"
-                  style="cursor: pointer; padding: 4px 10px; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; border-radius: 20px;">
-                  Xem ảnh ({{ getImageCount(house.images) }})
-                </button>
-                <span *ngIf="!house.images" style="color: #95a5a6;">---</span>
+              <div style="line-height: 1.6;">
+                <strong style="color: (--surface);">{{ house.address }}</strong><br>
+                <span style="color: #7f8c8d; font-size: 13px;">{{ house.ward }}, {{ house.district }}, {{ house.city }}</span>
+              </div>
             </td>
 
-            <td>{{ house.address }}</td>
-            <td>{{ house.ward }}</td>
-            <td>{{ house.district }}</td>
-            <td>{{ house.city }}</td>
-            <td class="actions">
-              <button class="btn-info" [routerLink]="['/admin/rooms']" [queryParams]="{ house_id: house.id }">
-                Xem phòng
-              </button>
-              <button *ngIf="userRole === 'OWNER'" class="btn-edit" (click)="openEditModal(house)">Sửa</button>
-              <button *ngIf="userRole === 'OWNER'" class="btn-delete" (click)="deleteHouse(house.id)">Xóa</button>
+            <!-- Cột 4: Menu 3 Chấm -->
+            <td class="actions" style="position: relative; text-align: right; padding-right: 20px;">
+              <button class="btn-dots" (click)="toggleDropdown(house.id, $event)">⋮</button>
+              
+              <!-- Khung Dropdown -->
+              <div class="dropdown-menu" *ngIf="activeDropdownId === house.id">
+                <button class="dropdown-item" [routerLink]="['/admin/rooms']" [queryParams]="{ house_id: house.id }">Xem DS phòng</button>
+                <button class="dropdown-item" *ngIf="house.images" (click)="openGallery(house.images)">Xem hình ảnh ({{ getImageCount(house.images) }})</button>
+                <button class="dropdown-item" *ngIf="userRole === 'OWNER'" (click)="openEditModal(house)">Chỉnh sửa</button>
+                <button class="dropdown-item text-danger" *ngIf="userRole === 'OWNER'" (click)="deleteHouse(house.id)">Xóa khu trọ</button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div *ngIf="totalPages > 0"
-      style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
-      <div style="color: #7f8c8d; font-size: 14px;">
+    <div class="pagination-container" *ngIf="totalPages > 0">
+      <div class="pagination-info">
         Hiển thị <b>{{ houseList.length }}</b> / Tổng <b>{{ totalRecords }}</b> khu trọ
       </div>
-
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === 1 ? '0.5' : '1'">
+      <div class="pagination-controls">
+        <button class="btn-page" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" [class.disabled]="currentPage === 1">
           ❮ Trước
         </button>
-
-        <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
-
-        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
+        <span class="page-current">Trang {{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn-page" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" [class.disabled]="currentPage === totalPages">
           Sau ❯
         </button>
       </div>

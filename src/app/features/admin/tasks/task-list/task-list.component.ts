@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { TaskService } from '../../../../services/task.service';
@@ -224,5 +224,16 @@ export class TaskListComponent implements OnInit {
         }
       });
     }
+  }
+  activeDropdownId: number | null = null;
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside() {
+    this.activeDropdownId = null;
+  }
+
+  toggleDropdown(id: number, event: Event) {
+    event.stopPropagation();
+    this.activeDropdownId = this.activeDropdownId === id ? null : id;
   }
 }

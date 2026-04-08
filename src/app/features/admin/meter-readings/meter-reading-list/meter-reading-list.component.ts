@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms'; 
 import { HttpClient } from '@angular/common/http';
@@ -37,7 +37,7 @@ export class MeterReadingListComponent implements OnInit {
   readingsList: any[] = [];
 
   readingForm: FormGroup = this.fb.group({
-    house_id: ['', Validators.required], // BỔ SUNG
+    house_id: ['', Validators.required], 
     room_id: ['', Validators.required],
     service_id: ['', Validators.required],
     reading_date: ['', Validators.required],
@@ -49,23 +49,21 @@ export class MeterReadingListComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.loadDropdownData();
       this.loadReadings(); 
+      this.listenForIndexChanges();
     }
   }
 
   loadDropdownData(): void {
-    // 1. Tải danh sách Khu trọ
     this.houseService.getAllHouses(1, 100, '').subscribe(res => {
       if (res.errorCode === 200) this.houseList = res.result.records;
     });
 
-    // 2. Tải TẤT CẢ các phòng ĐANG THUÊ
     this.roomService.getAllRooms(1, 100, '').subscribe(res => {
       if (res.errorCode === 200 && res.result && res.result.records) {
         this.allOccupiedRooms = res.result.records.filter((r: any) => r.status === 'OCCUPIED');
       }
     });
 
-    // 3. Tải danh sách dịch vụ đo bằng đồng hồ
     this.serviceService.getAllServices(1, 100, '').subscribe(res => {
       if (res.errorCode === 200 && res.result && res.result.records) {
         this.meterServices = res.result.records.filter((s: any) => s.service_type === 'METERED' || s.service_type === 'METER');
@@ -73,7 +71,34 @@ export class MeterReadingListComponent implements OnInit {
     });
   }
 
-  // HÀM LỌC PHÒNG KHI ĐỔI TÒA NHÀ
+  listenForIndexChanges(): void {
+    const controlsToWatch = ['room_id', 'service_id', 'reading_date'];
+    
+    controlsToWatch.forEach(controlName => {
+      this.readingForm.get(controlName)?.valueChanges.subscribe(() => {
+        if (this.isEditMode) return; 
+
+        const roomId = this.readingForm.get('room_id')?.value;
+        const serviceId = this.readingForm.get('service_id')?.value;
+        const date = this.readingForm.get('reading_date')?.value;
+
+        if (roomId && serviceId && date) {
+          this.http.get(`${environment.apiUrl}/general/meter-readings/latest-index?room_id=${roomId}&service_id=${serviceId}&date=${date}`)
+            .subscribe({
+              next: (res: any) => {
+                if (res.errorCode === 200) {
+                  this.readingForm.patchValue({ old_index: res.result.old_index }, { emitEvent: false });
+                }
+              },
+              error: () => {
+                this.readingForm.patchValue({ old_index: 0 }, { emitEvent: false });
+              }
+            });
+        }
+      });
+    });
+  }
+
   onHouseChange(): void {
     const selectedHouseId = Number(this.readingForm.value.house_id);
     this.filteredRooms = this.allOccupiedRooms.filter(r => r.house_id === selectedHouseId);
@@ -84,12 +109,17 @@ export class MeterReadingListComponent implements OnInit {
     this.http.get(`${environment.apiUrl}/general/meter-readings?month=${this.selectedMonth}`).subscribe({
       next: (res: any) => {
         if(res.errorCode === 200) {
-           this.readingsList = res.result; 
+          
+          this.readingsList = res.result.data || [];
+          
         } else {
-           this.readingsList = res.data || [];
+          this.readingsList = res.data || [];
         }
       },
-      error: (err) => console.error('Lỗi tải lịch sử:', err)
+      error: (err) => {
+        console.error('Lỗi tải lịch sử:', err);
+        this.readingsList = []; 
+      }
     });
   }
 
@@ -99,10 +129,8 @@ export class MeterReadingListComponent implements OnInit {
     
     const formattedDate = reading.reading_date ? reading.reading_date.substring(0, 10) : '';
     
-    // Lấy ID nhà từ thông tin Room đính kèm
     const hId = reading.Room?.house_id;
 
-    // Gắn nhà trước, lọc phòng rồi mới gắn phòng
     this.readingForm.patchValue({ house_id: hId });
     this.filteredRooms = this.allOccupiedRooms.filter(r => r.house_id === hId);
     
@@ -162,7 +190,11 @@ export class MeterReadingListComponent implements OnInit {
           this.loadReadings();
           this.isLoading = false;
         },
-        error: (err) => { alert('Lỗi: ' + err.message); this.isLoading = false; }
+        error: (err) => { 
+          const backendMsg = err.error?.errorMessage || 'Lỗi không xác định từ hệ thống!';
+          alert('Lỗi: ' + backendMsg); 
+          this.isLoading = false; 
+        }
       });
     } else {
       this.http.post(`${environment.apiUrl}/general/meter-readings`, payload).subscribe({
@@ -172,7 +204,11 @@ export class MeterReadingListComponent implements OnInit {
           this.loadReadings(); 
           this.isLoading = false;
         },
-        error: (err) => { alert('Lỗi: ' + err.message); this.isLoading = false; }
+        error: (err) => { 
+          const backendMsg = err.error?.errorMessage || 'Lỗi không xác định từ hệ thống!';
+          alert('Lỗi: ' + backendMsg); 
+          this.isLoading = false; 
+        }
       });
     }
   }
@@ -184,8 +220,24 @@ export class MeterReadingListComponent implements OnInit {
           alert('Đã xóa thành công!');
           this.loadReadings();
         },
-        error: (err) => alert('Lỗi khi xóa: ' + (err.error?.error || err.message))
+        error: (err) => { 
+          const backendMsg = err.error?.errorMessage || 'Lỗi không xác định từ hệ thống!';
+          alert('Lỗi: ' + backendMsg); 
+          this.isLoading = false; 
+        }
       });
     }
+  }
+
+  activeDropdownId: number | null = null;
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside() {
+    this.activeDropdownId = null;
+  }
+
+  toggleDropdown(id: number, event: Event) {
+    event.stopPropagation();
+    this.activeDropdownId = this.activeDropdownId === id ? null : id;
   }
 }

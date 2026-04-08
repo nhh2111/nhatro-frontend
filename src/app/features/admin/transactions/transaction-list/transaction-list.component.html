@@ -25,9 +25,10 @@
     </div>
   </div>
 
+  <!-- FIX: Khung tìm kiếm chuẩn -->
   <div class="filter-section">
-    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Tìm theo loại, danh mục, nội dung...">
-    <button (click)="onSearch()">Lọc dữ liệu</button>
+    <input class="input" type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Tìm theo loại, danh mục, nội dung...">
+    <button class="btn-info" (click)="onSearch()">Lọc dữ liệu</button>
   </div>
 
   <div class="loading-msg" *ngIf="isLoading">Đang tổng hợp dữ liệu...</div>
@@ -52,7 +53,7 @@
             <td>{{ tx.transaction_date | date:'dd/MM/yyyy HH:mm' }}</td>
             <td>
               <span class="badge" [ngClass]="tx.type === 'INCOME' ? 'badge-success' : 'badge-danger'">
-                {{ tx.type === 'INCOME' ? 'THU TIỀN' : 'CHI TIỀN' }}
+                {{ tx.type === 'INCOME' ? 'INCOME' : 'EXPENSE' }}
               </span>
             </td>
             <td class="fw-bold" [ngClass]="tx.type === 'INCOME' ? 'text-success' : 'text-danger'">
@@ -63,8 +64,8 @@
               <small class="text-muted" *ngIf="tx.Room">Phòng {{ tx.Room?.room_number }}</small>
             </td>
             <td class="desc-cell">
-              <span class="category-name">{{ tx.category }}</span>
-              <span class="description-text">{{ tx.description }}</span>
+              <span class="badge badge-dark" style="margin-bottom: 4px;">{{ tx.category }}</span><br>
+              <span style="font-size: 13px; color: var(--text-muted);">{{ tx.description }}</span>
             </td>
             <td class="actions">
               <button class="btn-delete" (click)="deleteTx(tx.id)">Hủy bỏ</button>
@@ -72,6 +73,17 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="pagination-container" *ngIf="totalPages > 0">
+      <div class="pagination-info">
+        Hiển thị <b>{{ transactions.length }}</b> / Tổng <b>{{ totalRecords }}</b> giao dịch
+      </div>
+      <div class="pagination-controls">
+        <button class="btn-page" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" [class.disabled]="currentPage === 1">❮ Trước</button>
+        <span class="page-current">Trang {{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn-page" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" [class.disabled]="currentPage === totalPages">Sau ❯</button>
+      </div>
     </div>
   </div>
 

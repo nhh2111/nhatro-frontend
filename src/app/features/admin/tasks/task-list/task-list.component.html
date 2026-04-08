@@ -4,14 +4,11 @@
     <button class="btn-add" (click)="openAddModal()">+ Ghi nhận sự cố</button>
   </div>
 
-  <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
-    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-      placeholder="Tìm theo tiêu đề, nội dung sự cố..."
-      style="padding: 10px; width: 350px; border: 1px solid #ccc; border-radius: 5px;">
-    <button (click)="onSearch()"
-      style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
-      Tìm kiếm
-    </button>
+  <!-- FIX: Khung tìm kiếm chuẩn -->
+  <div class="filter-section">
+    <input class="input" type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+      placeholder="Tìm theo tiêu đề, nội dung sự cố...">
+    <button class="btn-info" (click)="onSearch()">Tìm kiếm</button>
   </div>
 
   <div class="loading-msg" *ngIf="isLoading">Đang xử lý dữ liệu...</div>
@@ -22,77 +19,70 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Ngày tạo</th>
-            <th>Vị trí (Nhà/Phòng)</th>
-            <th>Tiêu đề & Nội dung</th>
-            <th>Trạng thái</th>
-            <th>Người xử lý</th>
-            <th>Chi phí</th>
-            <th>Xử lý ngày</th>
-            <th>Thao tác</th>
+            <th style="width: 40%;">Thông tin Sự cố & Vị trí</th>
+            <th style="width: 25%;">Trạng thái & Tiến độ</th>
+            <th style="width: 25%;">Chi phí & Người xử lý</th>
+            <th style="width: 10%; text-align: center;">Hành Động</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let task of taskList" [ngClass]="{'row-done': task.status === 'DONE'}">
-            <td>#{{ task.id }}</td>
-            <td>{{ task.created_at | date:'dd/MM/yyyy' }}</td>
             <td>
-              <strong>{{ task.House?.name || '---' }}</strong> <br>
-              <small style="color: #7f8c8d;">
-                {{ task.Room?.room_number ? 'P.' + task.Room?.room_number : '(Vị trí chung tòa nhà)' }}
-              </small>
-            </td>
-            <td>
-              <strong>{{ task.title }}</strong>
-              <!-- ĐÃ THÊM CSS CẮT DÒNG VÀ HOVER TITLE VÀO ĐÂY -->
-              <p [title]="task.content" style="font-size: 13px; color: #666; margin: 3px 0 0 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 250px; cursor: help;">
-                {{ task.content || '---' }}
+              <div class="fw-bold" style="font-size: 16px; color: var(--info);">#{{ task.id }} - {{ task.title }}</div>
+              <div style="font-size: 13px; color: var(--text-main); margin-top: 6px;">
+                <strong>{{ task.House?.name || '---' }}</strong>
+                <span style="color: var(--warning);">{{ task.Room?.room_number ? ' (P.' + task.Room?.room_number + ')' :
+                  ' (Khu vực chung)' }}</span>
+              </div>
+              <p [title]="task.content" style="font-size: 13px; color: var(--text-muted); margin: 6px 0 0 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: italic;line-clamp: 2;
+">
+                "{{ task.content || 'Không có mô tả chi tiết' }}"
               </p>
             </td>
+
             <td>
               <select [ngModel]="task.status" (ngModelChange)="changeStatus(task.id, $event)"
                 [ngClass]="'badge-' + task.status" class="status-select">
-                <option value="OPEN">Mới tiếp nhận (OPEN)</option>
-                <option value="IN_PROGRESS">Đang xử lý (IN_PROGRESS)</option>
-                <option value="DONE">Hoàn thành (DONE)</option>
-                <option value="CANCELLED">Hủy bỏ (CANCELLED)</option>
+                <option value="OPEN">Mới tiếp nhận</option>
+                <option value="IN_PROGRESS">Đang xử lý</option>
+                <option value="DONE">Hoàn thành</option>
+                <option value="CANCELLED">Hủy bỏ</option>
               </select>
+              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-top: 5px;">
+                Tạo: {{ task.created_at | date:'dd/MM/yyyy' }} <br>
+                <span *ngIf="task.finished_at">Xong: {{ task.finished_at | date:'dd/MM/yyyy' }}</span>
+              </div>
             </td>
-            <td>{{ task.assignee || '---' }}</td>
-            <td style="color: #e74c3c; font-weight: bold;">
-              {{ task.cost ? (task.cost | number:'1.0-0' + ' đ') : '---' }}
+
+            <td>
+              <div style="font-weight: 500; color: var(--text-main);">{{ task.assignee || 'Chưa phân công' }}</div>
+              <div style="color: var(--danger); font-weight: bold; font-size: 15px; margin-top: 6px;">
+                {{ task.cost ? (task.cost | number:'1.0-0') + ' đ' : '---' }}
+              </div>
             </td>
-            <td>{{ (task.finished_at | date:'dd/MM/yyyy') || '---' }}</td>
+
             <td class="actions">
-              <button class="btn-edit" (click)="openEditModal(task)">Sửa</button>
-              <button class="btn-delete" (click)="deleteTask(task.id)">Xóa</button>
+              <button class="btn-dots" (click)="toggleDropdown(task.id, $event)">⋮</button>
+              <div class="dropdown-menu" *ngIf="activeDropdownId === task.id">
+                <button class="dropdown-item" (click)="openEditModal(task)">Sửa sự cố / Chi phí</button>
+                <button class="dropdown-item text-danger" (click)="deleteTask(task.id)">Xóa sự cố</button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div *ngIf="totalPages > 0"
-      style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
-      <div style="color: #7f8c8d; font-size: 14px;">
+    <div class="pagination-container" *ngIf="totalPages > 0">
+      <div class="pagination-info">
         Hiển thị <b>{{ taskList.length }}</b> / Tổng <b>{{ totalRecords }}</b> sự cố
       </div>
-
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === 1 ? '0.5' : '1'">
-          ❮ Trước
-        </button>
-
-        <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
-
-        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
-          Sau ❯
-        </button>
+      <div class="pagination-controls">
+        <button class="btn-page" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+          [class.disabled]="currentPage === 1">❮ Trước</button>
+        <span class="page-current">Trang {{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn-page" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
+          [class.disabled]="currentPage === totalPages">Sau ❯</button>
       </div>
     </div>
   </div>
@@ -113,7 +103,7 @@
       <div class="form-grid">
         <div class="form-group full-width">
           <label>Tòa Nhà / Khu Trọ (*)</label>
-          <select formControlName="house_id">
+          <select formControlName="house_id" class="input">
             <option value="" disabled selected>-- Chọn nhà --</option>
             <option *ngFor="let h of houseList" [value]="h.id">{{ h.name }} ({{h.address}})</option>
           </select>
@@ -121,12 +111,12 @@
 
         <div class="form-group full-width">
           <label>Phòng liên quan (Tùy chọn)</label>
-          <select formControlName="room_id">
+          <select formControlName="room_id" class="input">
             <option [value]="null" selected>-- Vị trí chung của tòa nhà --</option>
             <option *ngFor="let r of filteredRoomList" [value]="r.id">Phòng {{ r.room_number }} (Tầng {{r.floor}})
             </option>
           </select>
-          <small *ngIf="taskForm.get('house_id')?.value && filteredRoomList.length === 0" style="color: red;">
+          <small *ngIf="taskForm.get('house_id')?.value && filteredRoomList.length === 0" style="color: var(--danger);">
             Nhà này chưa có danh sách phòng. Hãy thêm phòng trước!
           </small>
         </div>
@@ -138,7 +128,8 @@
 
         <div class="form-group full-width">
           <label>Mô tả chi tiết nội dung (content)</label>
-          <textarea formControlName="content" rows="4" placeholder="Nhập mô tả chi tiết sự cố tại đây..."></textarea>
+          <textarea formControlName="content" rows="4" placeholder="Nhập mô tả chi tiết sự cố tại đây..."
+            class="input"></textarea>
         </div>
 
         <div class="form-group" *ngIf="isEditMode">
@@ -149,14 +140,15 @@
         <div class="form-group" *ngIf="isEditMode">
           <label>Chi phí sửa chữa (VNĐ)</label>
           <input type="number" formControlName="cost" placeholder="Nhập tổng chi phí...">
-          <small style="color: #27ae60; font-size: 12px; margin-top: 4px; display: block;" *ngIf="taskForm.get('status')?.value === 'DONE' && taskForm.get('cost')?.value > 0">
+          <small style="color: var(--success); font-size: 12px; margin-top: 4px; display: block;"
+            *ngIf="taskForm.get('status')?.value === 'DONE' && taskForm.get('cost')?.value > 0">
             *Phiếu chi sẽ tự động được tạo khi lưu trạng thái Hoàn thành!
           </small>
         </div>
 
         <div class="form-group full-width" *ngIf="isEditMode">
           <label>Trạng thái xử lý</label>
-          <select formControlName="status">
+          <select formControlName="status" class="input">
             <option value="OPEN">Mới tiếp nhận (OPEN)</option>
             <option value="IN_PROGRESS">Đang xử lý (IN_PROGRESS)</option>
             <option value="DONE">Hoàn thành (DONE)</option>

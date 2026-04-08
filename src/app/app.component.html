@@ -1,1 +1,12 @@
 <router-outlet></router-outlet>
+
+<button
+  type="button"
+  class="theme-toggle"
+  (click)="toggleTheme()"
+  [attr.aria-label]="isDarkMode ? 'Chuyển sang chế độ ban ngày' : 'Chuyển sang chế độ ban đêm'"
+  [title]="isDarkMode ? 'Ban ngày' : 'Ban đêm'"
+>
+  <span class="theme-toggle__dot" aria-hidden="true"></span>
+  <span class="theme-toggle__text">{{ isDarkMode ? 'Ban ngày' : 'Ban đêm' }}</span>
+</button>

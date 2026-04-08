@@ -1,11 +1,60 @@
+/* Hiệu ứng làm mờ hàng đã hoàn thành */
 .row-done {
-  td { color: #95a5a6; text-decoration: line-through; opacity: 0.7; }
-  td.actions, td:nth-child(5) { opacity: 1; text-decoration: none; }
+  td:not(.actions) { 
+    color: var(--text-muted) !important; 
+    text-decoration: line-through; 
+    opacity: 0.6; 
+  }
 }
+
+/* Tùy chỉnh ô Select trạng thái thành dạng Badge */
 .status-select {
-  padding: 6px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; width: 150px;
-  &.badge-OPEN { background-color: #fce4e4; color: #e74c3c; border: 1px solid #e74c3c; }
-  &.badge-IN_PROGRESS { background-color: #fef9e7; color: #f1c40f; border: 1px solid #f1c40f; }
-  &.badge-DONE { background-color: #e8f8f5; color: #2ecc71; border: 1px solid #2ecc71; }
-  &.badge-CANCELLED { background-color: #f4f6f7; color: #95a5a6; border: 1px solid #95a5a6; }
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  width: auto;
+  min-width: 130px;
+  outline: none;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  appearance: none; /* Ẩn mũi tên mặc định của trình duyệt để giống badge hơn */
+  text-align: center;
+
+  /* Màu sắc cho từng trạng thái - Tương thích Dark Mode */
+  &.badge-OPEN {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+  &.badge-IN_PROGRESS {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+  &.badge-DONE {
+    background-color: rgba(22, 163, 74, 0.15);
+    color: #16a34a;
+    border-color: rgba(22, 163, 74, 0.3);
+  }
+  &.badge-CANCELLED {
+    background-color: rgba(148, 163, 184, 0.15);
+    color: #94a3b8;
+    border-color: rgba(148, 163, 184, 0.3);
+  }
+
+  &:hover {
+    filter: brightness(1.1);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+/* Đảm bảo trong Dark Mode chữ không bị quá tối */
+:root[data-theme='dark'] {
+  .status-select {
+    &.badge-IN_PROGRESS { color: #fbbf24; } /* Vàng sáng hơn cho dễ nhìn trên nền đen */
+    &.badge-OPEN { color: #f87171; }
+  }
 }

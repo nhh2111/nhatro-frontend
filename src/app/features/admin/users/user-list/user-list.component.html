@@ -4,14 +4,10 @@
     <button class="btn-add" (click)="openAddModal()">+ Thêm Nhân Viên</button>
   </div>
 
-  <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
-    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-      placeholder="Tìm theo tên, email nhân viên..."
-      style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px;">
-    <button (click)="onSearch()"
-      style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer;">
-      Tìm kiếm
-    </button>
+  <!-- FIX: Thanh filter -->
+  <div class="filter-section">
+    <input class="input" type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Tìm theo tên, email nhân viên...">
+    <button class="btn-info" (click)="onSearch()">Tìm kiếm</button>
   </div>
 
   <div class="loading-msg" *ngIf="isLoading">Đang tải dữ liệu...</div>
@@ -22,64 +18,60 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th style="width: 60px; text-align: center;">Ảnh</th> <th>Họ Tên</th>
-            <th>Email</th>
-            <th>SĐT</th>
-            <th>CCCD</th>
-            <th>Vai Trò</th>
-            <th>Trạng Thái</th>
-            <th>Hành Động</th>
+            <th style="width: 35%;">Hồ sơ Nhân viên</th>
+            <th style="width: 30%;">Thông tin Liên hệ</th>
+            <th style="width: 25%;">Bảo mật & Trạng thái</th>
+            <th style="width: 10%; text-align: center;">Hành Động</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let user of userList">
-            <td>#{{ user.id }}</td>
-            
-            <td style="text-align: center; vertical-align: middle;">
-              <img [src]="getAvatarUrl(user)" alt="Avatar" 
-                   style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; display: block; margin: 0 auto;">
+            <td>
+              <div style="display: flex; align-items: center; gap: 15px;">
+                <img [src]="getAvatarUrl(user)" alt="Avatar" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border);">
+                <div>
+                  <div class="fw-bold" style="font-size: 16px; color: var(--text-main);">{{ user.full_name }}</div>
+                  <div style="margin-top: 5px;">
+                    <span class="badge badge-info" style="font-size: 11px;">{{ user.role }}</span>
+                  </div>
+                </div>
+              </div>
             </td>
 
-            <td class="fw-bold">{{ user.full_name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.phone }}</td>
-            <td>{{ user.cccd }}</td>
-            <td><span class="badge badge-info">{{ user.role }}</span></td>
             <td>
+              <div style="font-size: 14px; color: var(--text-main); margin-bottom: 5px;">{{ user.email }}</div>
+              <div style="font-size: 14px; color: var(--primary); font-weight: 500;">{{ user.phone || '---' }}</div>
+            </td>
+
+            <td>
+              <div style="font-size: 14px; margin-bottom: 8px;">CCCD: {{ user.cccd || '---' }}</div>
               <span class="badge" [ngClass]="user.status ? 'badge-success' : 'badge-danger'">
-                {{ user.status ? 'Hoạt động' : 'Đã khóa' }}
+                {{ user.status ? 'Đang hoạt động' : 'Tài khoản khóa' }}
               </span>
             </td>
+
             <td class="actions">
-              <button class="btn-edit" (click)="openEditModal(user)">Sửa</button>
-              <button class="btn-delete" (click)="deleteUser(user.id)">Xóa</button>
+              <button class="btn-dots" (click)="toggleDropdown(user.id, $event)">⋮</button>
+              <div class="dropdown-menu" *ngIf="activeDropdownId === user.id">
+                <button class="dropdown-item" (click)="openEditModal(user)">Cập nhật thông tin</button>
+                <div style="border-top: 1px solid var(--border); margin: 4px 0;"></div>
+                <button class="dropdown-item text-danger" (click)="deleteUser(user.id)">Xóa nhân viên</button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div *ngIf="totalPages > 0"
-      style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: #fff; border-radius: 5px; border-top: 1px solid #eee;">
-      <div style="color: #7f8c8d; font-size: 14px;">
+    <!-- FIX: Thanh phân trang -->
+    <div class="pagination-container" *ngIf="totalPages > 0">
+      <div class="pagination-info">
         Hiển thị <b>{{ userList.length }}</b> / Tổng <b>{{ totalRecords }}</b> nhân viên
       </div>
-
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === 1 ? '0.5' : '1'">
-          ❮ Trước
-        </button>
-
-        <span style="font-weight: 500; padding: 0 10px;">Trang {{ currentPage }} / {{ totalPages }}</span>
-
-        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
-          style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;"
-          [style.opacity]="currentPage === totalPages ? '0.5' : '1'">
-          Sau ❯
-        </button>
+      <div class="pagination-controls">
+        <button class="btn-page" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" [class.disabled]="currentPage === 1">❮ Trước</button>
+        <span class="page-current">Trang {{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn-page" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" [class.disabled]="currentPage === totalPages">Sau ❯</button>
       </div>
     </div>
   </div>
@@ -102,8 +94,7 @@
         <div class="form-group">
           <label>Địa chỉ Email (Dùng để đăng nhập)</label>
           <input type="email" formControlName="email" placeholder="VD: nguyenvanb@gmail.com">
-          <small *ngIf="!isEditMode" style="color: #7f8c8d; display: block; margin-top: 5px;">Mật khẩu mặc định sẽ là
-            123456</small>
+          <small *ngIf="!isEditMode" style="color: var(--text-muted); display: block; margin-top: 5px;">Mật khẩu mặc định sẽ là 123456</small>
         </div>
 
         <div class="form-group">

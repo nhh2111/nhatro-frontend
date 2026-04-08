@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ServiceService } from '../../../../services/service.service';
 import { AuthService } from '../../../../services/auth.service';
+import { HostListener } from '@angular/core';
 
 @Component({
   selector: 'app-service-list',
@@ -35,7 +36,7 @@ export class ServiceListComponent implements OnInit {
     name: ['', Validators.required],
     service_type: ['METER', Validators.required],
     unit_price: [0, [Validators.required, Validators.min(0)]],
-    unit: ['', Validators.required],                 
+    unit: ['', Validators.required],
     description: ['']
   });
 
@@ -50,14 +51,14 @@ export class ServiceListComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     this.srvService.getAllServices(this.currentPage, this.pageSize, this.searchQuery).subscribe({
-      next: (res) => { 
+      next: (res) => {
         if (res.errorCode === 200) {
-          this.serviceList = res.result.records; 
+          this.serviceList = res.result.records;
           this.totalRecords = res.result.recordCount;
           this.totalPages = res.result.pageCount;
           this.currentPage = res.result.currentPage;
         }
-        this.isLoading = false; 
+        this.isLoading = false;
       },
       error: (err) => {
         this.errorMessage = 'Lỗi tải dữ liệu: ' + (err.error?.errorMessage || err.message);
@@ -67,7 +68,7 @@ export class ServiceListComponent implements OnInit {
   }
 
   onSearch(): void {
-    this.currentPage = 1; 
+    this.currentPage = 1;
     this.loadServices();
   }
 
@@ -112,10 +113,10 @@ export class ServiceListComponent implements OnInit {
     }
 
     const rawValue = this.serviceForm.value;
-    
+
     const serviceData = {
       ...rawValue,
-      unit_price: Number(rawValue.unit_price) 
+      unit_price: Number(rawValue.unit_price)
     };
 
     if (this.isEditMode && this.currentServiceId) {
@@ -132,7 +133,7 @@ export class ServiceListComponent implements OnInit {
   }
 
   getServiceTypeName(type: string): string {
-    switch(type) {
+    switch (type) {
       case 'FIXED': return 'Cố định';
       case 'METER': return 'Có đồng hồ (Điện/Nước)';
       case 'PER_PERSON': return 'Đầu người';
@@ -143,13 +144,25 @@ export class ServiceListComponent implements OnInit {
   }
 
   getServiceTypeClass(type: string): string {
-    switch(type) {
+    switch (type) {
       case 'FIXED': return 'badge-fixed';
-      case 'METER': return 'badge-metered'; 
-      case 'PER_PERSON': return 'badge-person'; 
-      case 'PER_MOTORBIKE': return 'badge-warning'; 
-      case 'PER_CAR': return 'badge-success'; 
+      case 'METER': return 'badge-metered';
+      case 'PER_PERSON': return 'badge-person';
+      case 'PER_MOTORBIKE': return 'badge-warning';
+      case 'PER_CAR': return 'badge-success';
       default: return 'badge-secondary';
     }
+  }
+
+  activeDropdownId: number | null = null;
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside() {
+    this.activeDropdownId = null;
+  }
+
+  toggleDropdown(id: number, event: Event) {
+    event.stopPropagation();
+    this.activeDropdownId = this.activeDropdownId === id ? null : id;
   }
 }

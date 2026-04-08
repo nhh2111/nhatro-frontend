@@ -1,15 +1,18 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { ContractService } from '../../../../services/contract.service';
 import { RoomService } from '../../../../services/room.service';
 import { TenantService } from '../../../../services/tenant.service';
-import { HouseService } from '../../../../services/house.service'; // BỔ SUNG
+import { HouseService } from '../../../../services/house.service';
+import { NgSelectModule } from '@ng-select/ng-select'; // TÍCH HỢP BỘ TÌM KIẾM
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-contract-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, NgSelectModule], // Kéo NgSelectModule vào đây
   templateUrl: './contract-list.component.html',
   styleUrls: ['./contract-list.component.scss']
 })
@@ -17,21 +20,27 @@ export class ContractListComponent implements OnInit {
   private contractService = inject(ContractService);
   private roomService = inject(RoomService);
   private tenantService = inject(TenantService);
-  private houseService = inject(HouseService); // BỔ SUNG
+  private houseService = inject(HouseService);
   private fb = inject(FormBuilder);
   private platformId = inject(PLATFORM_ID);
 
   contractList: any[] = [];
-  tenantList: any[] = [];
 
-  // BIẾN CHO PHÂN CẤP NHÀ -> PHÒNG
+  // BIẾN QUẢN LÝ DỮ LIỆU DROPDOWN
   houseList: any[] = [];
   allAvailableRooms: any[] = [];
   filteredAvailableRooms: any[] = [];
+  allTenants: any[] = [];
+  filteredTenants: any[] = []; // Biến chứa khách đã lọc giới tính
 
   isLoading: boolean = false;
   showModal: boolean = false;
   errorMessage: string = '';
+
+  // BIẾN QUẢN LÝ XUẤT PDF
+  showDetailModal: boolean = false;
+  selectedContract: any = null;
+  isExporting: boolean = false;
 
   currentPage: number = 1;
   pageSize: number = 10;
@@ -40,9 +49,9 @@ export class ContractListComponent implements OnInit {
   searchQuery: string = '';
 
   contractForm: FormGroup = this.fb.group({
-    house_id: ['', Validators.required], // BỔ SUNG
-    room_id: ['', Validators.required],
-    tenant_id: ['', Validators.required],
+    house_id: [null, Validators.required],
+    room_id: [null, Validators.required],
+    tenant_id: [null, Validators.required],
     start_date: ['', Validators.required],
     end_date: ['', Validators.required],
     deposit_amount: [0, [Validators.required, Validators.min(0)]],
@@ -52,7 +61,7 @@ export class ContractListComponent implements OnInit {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadContracts();
-      this.loadDropdownData(); // Lấy data nhà/phòng/khách ngay từ đầu cho mượt
+      this.loadDropdownData();
     }
   }
 
@@ -88,23 +97,24 @@ export class ContractListComponent implements OnInit {
   }
 
   openAddModal(): void {
-    this.contractForm.reset({ deposit_amount: 0, house_id: '', room_id: '', tenant_id: '' });
-    this.filteredAvailableRooms = []; // Reset danh sách phòng
+    this.contractForm.reset({ deposit_amount: 0, house_id: null, room_id: null, tenant_id: null });
+    this.filteredAvailableRooms = [];
+    this.filteredTenants = [...this.allTenants]; // Mặc định hiển thị tất cả khách
     this.showModal = true;
   }
 
   loadDropdownData(): void {
-    // 1. Tải danh sách Khu trọ
     this.houseService.getAllHouses(1, 100, '').subscribe(res => {
       if (res.errorCode === 200) this.houseList = res.result.records;
     });
 
-    // 2. Tải danh sách Khách thuê
     this.tenantService.getAllTenants(1, 100, '').subscribe(res => {
-      if (res.errorCode === 200) this.tenantList = res.result.records;
+      if (res.errorCode === 200) {
+        this.allTenants = res.result.records;
+        this.filteredTenants = [...this.allTenants];
+      }
     });
 
-    // 3. Tải TẤT CẢ các phòng đang trống/còn chỗ
     this.roomService.getAllRooms(1, 100, '').subscribe(res => {
       if (res.errorCode === 200) {
         this.allAvailableRooms = res.result.records.filter((room: any) => {
@@ -116,10 +126,30 @@ export class ContractListComponent implements OnInit {
     });
   }
 
+  // KHI ĐỔI NHÀ -> LỌC PHÒNG
   onHouseChange(): void {
     const selectedHouseId = Number(this.contractForm.value.house_id);
     this.filteredAvailableRooms = this.allAvailableRooms.filter(r => r.house_id === selectedHouseId);
-    this.contractForm.patchValue({ room_id: '' });
+    this.contractForm.patchValue({ room_id: null, tenant_id: null }); // Reset phòng và khách
+    this.filteredTenants = [...this.allTenants];
+  }
+
+  // LOGIC MỚI: KHI ĐỔI PHÒNG -> LỌC GIỚI TÍNH KHÁCH THUÊ
+  onRoomChange(): void {
+    const selectedRoomId = Number(this.contractForm.value.room_id);
+    const selectedRoom = this.filteredAvailableRooms.find(r => r.id === selectedRoomId);
+
+    this.contractForm.patchValue({ tenant_id: null }); // Reset ô chọn khách
+
+    if (selectedRoom) {
+      const restriction = selectedRoom.gender_restriction;
+      // Lọc nếu phòng chỉ cho Nam hoặc chỉ cho Nữ
+      if (restriction === 'MALE' || restriction === 'FEMALE') {
+        this.filteredTenants = this.allTenants.filter(t => t.gender === restriction);
+      } else {
+        this.filteredTenants = [...this.allTenants]; // Nếu là ALL thì hiện tất cả
+      }
+    }
   }
 
   closeModal(): void {
@@ -163,5 +193,80 @@ export class ContractListComponent implements OnInit {
         error: (err) => alert('Lỗi thanh lý: ' + (err.error?.error || err.message))
       });
     }
+  }
+
+  // ============================================
+  // KHU VỰC QUẢN LÝ XUẤT PDF HỢP ĐỒNG
+  // ============================================
+  viewDetail(contract: any): void {
+    this.selectedContract = contract;
+    this.showDetailModal = true;
+  }
+
+  closeDetailModal(): void {
+    this.showDetailModal = false;
+    this.selectedContract = null;
+  }
+
+  exportPDF(): void {
+    const element = document.getElementById('contract-print-area');
+    if (element) {
+      this.isExporting = true;
+      const originalOverflow = element.style.overflow;
+      const originalHeight = element.style.height;
+
+      element.style.overflow = 'visible';
+      element.style.height = 'max-content';
+
+      html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        scrollY: 0,
+        windowHeight: element.scrollHeight
+      }).then(canvas => {
+        element.style.overflow = originalOverflow;
+        element.style.height = originalHeight;
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210;
+        const pageHeight = 297;
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        const fileName = `Hop_Dong_P${this.selectedContract?.Room?.room_number}_${this.selectedContract?.Tenant?.full_name}.pdf`;
+        pdf.save(fileName);
+        this.isExporting = false;
+      }).catch(err => {
+        alert("Lỗi khi tạo PDF!");
+        element.style.overflow = originalOverflow;
+        element.style.height = originalHeight;
+        this.isExporting = false;
+      });
+    }
+  }
+
+  activeDropdownId: number | null = null;
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside() {
+    this.activeDropdownId = null;
+  }
+
+  toggleDropdown(id: number, event: Event) {
+    event.stopPropagation();
+    this.activeDropdownId = this.activeDropdownId === id ? null : id;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { TenantService } from '../../../../services/tenant.service';
@@ -44,8 +44,8 @@ export class TenantListComponent implements OnInit {
     cccd: ['', [Validators.required, Validators.pattern('^[0-9]{9,12}$')]],
     dob: [''],
     gender: ['MALE'],
-    motorbike_count: [0, [Validators.required, Validators.min(0)]], 
-    car_count: [0, [Validators.required, Validators.min(0)]],      
+    motorbike_count: [0, [Validators.required, Validators.min(0)]],
+    car_count: [0, [Validators.required, Validators.min(0)]],
     license_plates: [''],
     address: [''],
     image_url: [''] // Chứa URL cũ để gửi xuống Backend nếu update
@@ -62,14 +62,14 @@ export class TenantListComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     this.tenantService.getAllTenants(this.currentPage, this.pageSize, this.searchQuery).subscribe({
-      next: (res) => { 
+      next: (res) => {
         if (res.errorCode === 200) {
-          this.tenantList = res.result.records; 
+          this.tenantList = res.result.records;
           this.totalRecords = res.result.recordCount;
           this.totalPages = res.result.pageCount;
           this.currentPage = res.result.currentPage;
         }
-        this.isLoading = false; 
+        this.isLoading = false;
       },
       error: (err) => {
         const backendMsg = err.error?.errorMessage || err.error?.message || err.error?.error || err.error?.detail || err.message;
@@ -108,7 +108,7 @@ export class TenantListComponent implements OnInit {
     this.currentTenantId = undefined;
     this.selectedImageFile = null;
     this.previewImageUrl = null;
-    
+
     this.tenantForm.reset();
     this.tenantForm.patchValue({
       gender: 'MALE',
@@ -132,7 +132,7 @@ export class TenantListComponent implements OnInit {
       full_name: tenant.full_name,
       phone: tenant.phone,
       cccd: tenant.cccd,
-      dob: formattedDob, 
+      dob: formattedDob,
       gender: tenant.gender,
       motorbike_count: tenant.motorbike_count || 0,
       car_count: tenant.car_count || 0,
@@ -200,10 +200,10 @@ export class TenantListComponent implements OnInit {
 
     if (this.isEditMode && this.currentTenantId) {
       this.tenantService.updateTenant(this.currentTenantId, formData).subscribe({
-        next: () => { 
-          alert('Cập nhật thành công!'); 
-          this.closeModal(); 
-          this.loadTenants(); 
+        next: () => {
+          alert('Cập nhật thành công!');
+          this.closeModal();
+          this.loadTenants();
         },
         error: (err) => {
           const backendMsg = err.error?.errorMessage || err.error?.message || err.error?.error || err.error?.detail || err.message;
@@ -213,10 +213,10 @@ export class TenantListComponent implements OnInit {
       });
     } else {
       this.tenantService.createTenant(formData).subscribe({
-        next: () => { 
-          alert('Thêm khách mới thành công!'); 
-          this.closeModal(); 
-          this.loadTenants(); 
+        next: () => {
+          alert('Thêm khách mới thành công!');
+          this.closeModal();
+          this.loadTenants();
         },
         error: (err) => {
           const backendMsg = err.error?.errorMessage || err.error?.message || err.error?.error || err.error?.detail || err.message;
@@ -225,5 +225,16 @@ export class TenantListComponent implements OnInit {
         }
       });
     }
+  }
+  activeDropdownId: number | null = null;
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside() {
+    this.activeDropdownId = null;
+  }
+
+  toggleDropdown(id: number, event: Event) {
+    event.stopPropagation();
+    this.activeDropdownId = this.activeDropdownId === id ? null : id;
   }
 }
