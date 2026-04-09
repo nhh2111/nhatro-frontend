@@ -1316,22 +1316,36 @@ input[type="month"] {
   }
 }
 
-/* --- FIX LỖI MODAL BỊ KẸT CUỘN TRÊN ĐIỆN THOẠI (SAFARI/IOS) --- */
+
 @media (max-width: 768px) {
   .modal-overlay {
     padding: 0 !important;
+    align-items: flex-start !important; /* Ép modal dính sát mép trên cùng */
   }
 
   .modal-content {
     width: 100% !important;
-    height: 100% !important; 
-    max-height: 100% !important;
+    /* DÙNG dvh (Dynamic Viewport Height) ĐỂ SAFARI TỰ TRỪ ĐI THANH CÔNG CỤ */
+    height: 100dvh !important; 
+    max-height: 100dvh !important;
     border-radius: 0 !important; 
+    display: flex;
+    flex-direction: column;
   }
 
   form, .modal-body {
-    -webkit-overflow-scrolling: touch; 
+    flex: 1; /* Tự động co giãn chiếm phần không gian ở giữa */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 16px !important;
-    padding-bottom: 120px !important; 
+  }
+
+  .modal-content .modal-footer {
+    /* Đẩy phần footer của Modal lên cao 80px để CHÁNH BỊ NÚT "BAN NGÀY" ĐÈ LÊN */
+    padding-bottom: 80px !important;
+    padding-right: 20px !important;
+    position: relative;
+    z-index: 10;
+    background: var(--surface);
   }
 }
