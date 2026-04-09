@@ -1315,3 +1315,23 @@ input[type="month"] {
     }
   }
 }
+
+/* --- FIX LỖI MODAL BỊ KẸT CUỘN TRÊN ĐIỆN THOẠI (SAFARI/IOS) --- */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 0 !important;
+  }
+
+  .modal-content {
+    width: 100% !important;
+    height: 100% !important; 
+    max-height: 100% !important;
+    border-radius: 0 !important; 
+  }
+
+  form, .modal-body {
+    -webkit-overflow-scrolling: touch; 
+    padding: 16px !important;
+    padding-bottom: 120px !important; 
+  }
+}

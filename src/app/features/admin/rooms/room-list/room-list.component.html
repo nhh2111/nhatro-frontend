@@ -27,24 +27,20 @@
           </thead>
           <tbody>
             <tr *ngFor="let room of roomList">
-              <!-- 1. Khu trọ -->
               <td class="fw-bold">{{ getHouseName(room.house_id) }}</td>
 
-              <!-- 2. Thông tin Phòng + MÔ TẢ (Gộp vào đây cho thoáng) -->
               <td>
                 <div style="font-size: 18px; font-weight: 700; color: var(--info);">P.{{ room.room_number }}</div>
                 <div style="color: #7f8c8d; font-weight: 500; margin-bottom: 5px;">
                   Tầng {{ room.floor }} • {{ room.width * room.length }} m²
                 </div>
 
-                <!-- PHẦN MÔ TẢ: Hiển thị nhỏ gọn bên dưới -->
                 <div *ngIf="room.description"
                   style="font-size: 13px; color: #95a5a6; font-style: italic; border-left: 2px solid #eee; padding-left: 8px; margin-top: 5px;">
                   {{ (room.description.length > 80) ? (room.description | slice:0:80) + '...' : room.description }}
                 </div>
               </td>
 
-              <!-- 3. Trạng thái -->
               <td>
                 <span class="badge" [ngClass]="{
               'badge-success': room.status === 'AVAILABLE', 
@@ -52,20 +48,21 @@
               'badge-danger': room.status === 'OCCUPIED' && (room.current_occupants || 0) >= room.max_occupants,
               'badge-dark': room.status === 'MAINTENANCE'
             }">
-                  {{ room.status === 'AVAILABLE' ? 'Trống' : (room.status === 'MAINTENANCE' ? 'Bảo trì' : 'Đang thuê')
+                  {{ 
+                    room.status === 'AVAILABLE' ? 'Trống' : 
+                    (room.status === 'MAINTENANCE' ? 'Bảo trì' : 
+                      ((room.current_occupants || 0) >= room.max_occupants ? 'Kín phòng' : 'Đang thuê')
+                    )
                   }}
                 </span>
                 <div style="font-size: 14px; margin-top: 5px;">
                   <b>{{ room.current_occupants || 0 }}/{{ room.max_occupants }}</b> người •
-                  <small>{{ room.gender_restriction === 'ALL' ? 'Nam & Nữ' : (room.gender_restriction === 'MALE' ? 'Chỉ
-                    Nam' : 'Chỉ Nữ') }}</small>
+                  <small>{{ room.gender_restriction === 'ALL' ? 'Nam & Nữ' : (room.gender_restriction === 'MALE' ? 'Chỉ Nam' : 'Chỉ Nữ') }}</small>
                 </div>
               </td>
 
-              <!-- 4. Giá -->
               <td class="price" style="font-size: 16px; font-weight: 700;">{{ room.base_price | number }} đ</td>
 
-              <!-- 5. Hành động -->
               <td class="actions" style="position: relative; text-align: right;">
                 <button class="btn-dots" (click)="toggleDropdown(room.id, $event)">⋮</button>
                 <div class="dropdown-menu" *ngIf="activeDropdownId === room.id">
